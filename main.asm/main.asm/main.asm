@@ -13,7 +13,6 @@ score BYTE 0
 
 xPos BYTE 20
 yPos BYTE 20
-
 xCoinPos BYTE ?
 yCoinPos BYTE ?
 
@@ -71,20 +70,36 @@ main PROC
 		je exitGame
 
 		cmp inputChar,"w"
-		je moveUp
+		je checkTop
 
 		cmp inputChar,"s"
 		je checkBottom
 
 		cmp inputChar,"a"
-		je moveLeft
+		je checkLeft
 
 		cmp inputChar,"d"
-		je moveRight
+		je checkRight
 
-		checkBottom:
+		checkBottom:	;snake cant go under the bottom line
 		cmp yPos,28
-		jl moveDown
+		jne moveDown
+		jmp gameLoop
+
+		checkLeft:	;snake cant go too far over to the left
+		cmp xPos,1
+		jne moveLeft
+		jmp gameLoop
+
+		checkRight:	;snake cant go too far over to the right
+		cmp xPos,118
+		jne moveRight
+		jmp gameLoop
+
+		checkTop:	;snake cant go too far over to the top
+		cmp yPos,1
+		jne moveUp
+		jmp gameLoop
 
 		moveUp:
 		call UpdatePlayer
