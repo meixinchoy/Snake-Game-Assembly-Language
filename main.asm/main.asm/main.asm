@@ -11,7 +11,7 @@ ground BYTE "-------------------------------------------------------------------
 strScore BYTE "Your score is: ",0
 score BYTE 0
 
-player DB "              X",0
+player DB "X             ",0
 blank DB "               ",0
 
 xPos BYTE 20
