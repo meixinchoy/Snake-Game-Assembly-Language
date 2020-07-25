@@ -164,11 +164,14 @@ DrawCoin PROC
 DrawCoin ENDP
 
 CreateRandomCoin PROC
-	mov eax,55
-	inc eax
+	mov eax,118
 	call RandomRange
+	inc eax
 	mov xCoinPos,al
-	mov yCoinPos,27
+	mov eax,28
+	call RandomRange
+	inc eax
+	mov yCoinPos,al
 	ret
 CreateRandomCoin ENDP
 
