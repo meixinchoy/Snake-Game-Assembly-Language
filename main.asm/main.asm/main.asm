@@ -11,11 +11,9 @@ ground BYTE "-------------------------------------------------------------------
 strScore BYTE "Your score is: ",0
 score BYTE 0
 
-player DB "X              ",0
-blank DB "               ",0
-
 xPos BYTE 20
 yPos BYTE 20
+
 xCoinPos BYTE ?
 yCoinPos BYTE ?
 
@@ -140,8 +138,8 @@ DrawPlayer PROC
 	mov dl,xPos
 	mov dh,yPos
 	call Gotoxy
-	mov edx, OFFSET player
-	call WriteString
+	mov al, "X"
+	call WriteChar
 	ret
 DrawPlayer ENDP
 
@@ -149,8 +147,8 @@ UpdatePlayer PROC
 	mov dl,xPos
 	mov dh,yPos
 	call Gotoxy
-	mov edx, OFFSET blank
-	call WriteString
+	mov al, " "
+	call WriteChar
 	ret
 UpdatePlayer ENDP
 
