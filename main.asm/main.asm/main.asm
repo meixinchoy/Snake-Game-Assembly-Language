@@ -11,8 +11,10 @@ ground BYTE "-------------------------------------------------------------------
 strScore BYTE "Your score is: ",0
 score BYTE 0
 
-xPos BYTE 20
-yPos BYTE 20
+snake BYTE 10 DUP(?),0
+
+xPos BYTE 118
+yPos BYTE 28
 
 xCoinPos BYTE ?
 yCoinPos BYTE ?
@@ -21,6 +23,7 @@ inputChar BYTE ?
 
 .code
 main PROC
+	mov snake[0], "X"
 	; draw ground at (0,29):
 	mov dl,0
 	mov dh,29
@@ -46,6 +49,11 @@ main PROC
 		jne notCollecting
 		; player is intersecting coin:
 		inc score
+		mov eax, 0
+		mov al, score
+		mov snake[eax], "X"
+		call UpdatePlayer
+		call DrawPlayer
 		call CreateRandomCoin
 		call DrawCoin
 		notCollecting:
@@ -138,8 +146,13 @@ DrawPlayer PROC
 	mov dl,xPos
 	mov dh,yPos
 	call Gotoxy
-	mov al, "X"
+	mov eax, 0
+	mov ecx, 1
+	add cl, score
+L1:	mov al, snake[EAX]
 	call WriteChar
+	inc EAX
+loop L1	
 	ret
 DrawPlayer ENDP
 
@@ -147,8 +160,13 @@ UpdatePlayer PROC
 	mov dl,xPos
 	mov dh,yPos
 	call Gotoxy
-	mov al, " "
+	mov ecx, 1
+	add cl, score
+L1:	mov al, " "
 	call WriteChar
+loop L1	
+	call WriteChar
+
 	ret
 UpdatePlayer ENDP
 
@@ -164,15 +182,19 @@ DrawCoin PROC
 DrawCoin ENDP
 
 CreateRandomCoin PROC
-	mov eax,55
-	inc eax
+	mov eax,118
 	call RandomRange
+	inc eax
 	mov xCoinPos,al
-	mov yCoinPos,27
+	mov eax,28
+	call RandomRange
+	inc eax
+	mov yCoinPos,al
 	ret
 CreateRandomCoin ENDP
 
 END main
+
 
 ; gravity logic:
 ;		gravity:
