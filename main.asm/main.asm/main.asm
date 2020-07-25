@@ -101,7 +101,9 @@ main PROC
 		jmp gameLoop
 
 		checkRight:	;snake cant go too far over to the right
-		cmp xPos,118
+		mov cl, 118
+		sub cl, score
+		cmp xPos,cl
 		jne moveRight
 		jmp gameLoop
 
@@ -162,6 +164,7 @@ UpdatePlayer PROC
 	call Gotoxy
 	mov ecx, 1
 	add cl, score
+	mov eax, 0
 L1:	mov al, " "
 	call WriteChar
 loop L1	
