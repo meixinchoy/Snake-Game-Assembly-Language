@@ -60,20 +60,7 @@ main PROC
 		mov edx,OFFSET strScore
 		call WriteString
 		mov al,score
-		call WriteInt
-
-		; gravity logic:
-		gravity:
-		cmp yPos,27
-		jg onGround
-		; make player fall:
-		call UpdatePlayer
-		inc yPos
-		call DrawPlayer
-		mov eax,80
-		call Delay
-		jmp gravity
-		onGround:
+		call WriteInt		
 
 		; get user key input:
 		call ReadChar
@@ -87,7 +74,7 @@ main PROC
 		je moveUp
 
 		cmp inputChar,"s"
-		je moveDown
+		je checkBottom
 
 		cmp inputChar,"a"
 		je moveLeft
@@ -95,16 +82,14 @@ main PROC
 		cmp inputChar,"d"
 		je moveRight
 
+		checkBottom:
+		cmp yPos,28
+		jl moveDown
+
 		moveUp:
-		; allow player to jump:
-		mov ecx,1
-		jumpLoop:
-			call UpdatePlayer
-			dec yPos
-			call DrawPlayer
-			mov eax,70
-			call Delay
-		loop jumpLoop
+		call UpdatePlayer
+		dec yPos
+		call DrawPlayer
 		jmp gameLoop
 
 		moveDown:
@@ -172,3 +157,29 @@ CreateRandomCoin PROC
 CreateRandomCoin ENDP
 
 END main
+
+; gravity logic:
+;		gravity:
+;		cmp yPos,27
+;		jg onGround
+; make player fall:
+;		call UpdatePlayer
+;		inc yPos
+;		call DrawPlayer
+;		mov eax,80
+;		call Delay
+;		jmp gravity
+;		onGround:
+
+;allow player to jump
+;		moveUp:
+;		; allow player to jump:
+;		mov ecx,1
+;		jumpLoop:
+;			call UpdatePlayer
+;			dec yPos
+;			call DrawPlayer
+;			mov eax,70
+;			call Delay
+;		loop jumpLoop
+;		jmp gameLoop
