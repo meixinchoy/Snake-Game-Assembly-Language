@@ -11,7 +11,7 @@ ground BYTE "-------------------------------------------------------------------
 strScore BYTE "Your score is: ",0
 score BYTE 0
 
-snake BYTE 10 DUP(?),0
+snake BYTE "X",?,?,?,?
 
 xPos BYTE 118
 yPos BYTE 28
@@ -23,14 +23,13 @@ inputChar BYTE ?
 
 .code
 main PROC
-	mov snake[0], "X"
 	; draw ground at (0,29):
 	mov dl,0
 	mov dh,29
 	call Gotoxy
 	mov edx,OFFSET ground
 	call WriteString
-
+			mov snake[1], "X"
 	call DrawPlayer
 
 	call CreateRandomCoin
@@ -51,7 +50,7 @@ main PROC
 		inc score
 		mov eax, 0
 		mov al, score
-		mov snake[eax], "X"
+		mov snake[1], "X"
 		call UpdatePlayer
 		call DrawPlayer
 		call CreateRandomCoin
@@ -164,7 +163,6 @@ UpdatePlayer PROC
 	call Gotoxy
 	mov ecx, 1
 	add cl, score
-	mov eax, 0
 L1:	mov al, " "
 	call WriteChar
 loop L1	
