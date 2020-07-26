@@ -11,10 +11,18 @@ ground BYTE "-------------------------------------------------------------------
 strScore BYTE "Your score is: ",0
 score BYTE 0
 
-snake BYTE "X",?,?,?,?
+snake BYTE "X","x",?,?,? ,0
 
-xPos BYTE 118
-yPos BYTE 28
+xPos BYTE 20,19,?,?,?, 0
+yPos BYTE 20,20,?,?,? ,0
+
+xPosEql BYTE 1
+yPosEql BYTE 1
+
+xdir BYTE "R"
+ydir BYTE "NA"
+
+xdirflag BYTE 0
 
 xCoinPos BYTE ?
 yCoinPos BYTE ?
@@ -26,11 +34,16 @@ main PROC
 	; draw ground at (0,29):
 	mov dl,0
 	mov dh,29
-	call Gotoxy
+	call Gotoxy	
 	mov edx,OFFSET ground
 	call WriteString
-			mov snake[1], "X"
+
+	mov ecx, 2
+	mov ebx,1
+L1: 
 	call DrawPlayer
+	dec ebx
+loop L1
 
 	call CreateRandomCoin
 	call DrawCoin
@@ -40,17 +53,18 @@ main PROC
 	gameLoop:
 
 		; getting points:
-		mov bl,xPos
+		mov ebx,0
+		mov bl,xPos[0]
 		cmp bl,xCoinPos
 		jne notCollecting
-		mov bl,yPos
+		mov bl,yPos[0]
 		cmp bl,yCoinPos
 		jne notCollecting
 		; player is intersecting coin:
 		inc score
-		mov eax, 0
-		mov al, score
-		mov snake[1], "X"
+;		mov eax, 1
+;		add al, score
+;		mov snake[eax], "X"
 		call UpdatePlayer
 		call DrawPlayer
 		call CreateRandomCoin
@@ -88,6 +102,7 @@ main PROC
 
 		cmp inputChar,"d"
 		je checkRight
+		jne gameLoop
 
 		checkBottom:	;snake cant go under the bottom line
 		cmp yPos,28
@@ -95,21 +110,33 @@ main PROC
 		jmp gameLoop
 
 		checkLeft:	;snake cant go too far over to the left
-		cmp xPos,1
-		jne moveLeft
+		cmp xPos[0],1
+		jne bodysameline
 		jmp gameLoop
 
 		checkRight:	;snake cant go too far over to the right
 		mov cl, 118
 		sub cl, score
-		cmp xPos,cl
-		jne moveRight
+		cmp xPos[0],cl
+		jne bodysameline
 		jmp gameLoop
 
 		checkTop:	;snake cant go too far over to the top
 		cmp yPos,1
 		jne moveUp
 		jmp gameLoop
+
+		bodysameline:
+		cmp inputChar, "a"
+		je moveLeft
+		cmp inputChar, "d"
+		je moveRight
+		cmp inputChar, "s"
+		je moveDown
+		cmp inputChar, "w"
+		je moveUp
+
+		bodydiffdir:
 
 		moveUp:
 		call UpdatePlayer
@@ -124,18 +151,74 @@ main PROC
 		jmp gameLoop
 
 		moveLeft:
+		mov ecx, 2
+		add cl, score
+		mov ebx, 0
+		cmp xdir, "R"
+		je leftnoupdate
+		jne L3
+	L3:	
 		call UpdatePlayer
-		dec xPos
+		dec xPos[ebx]
 		call DrawPlayer
+		inc ebx
+	loop L3
+		cmp xdirflag, 1
+		je offxdirflag
 		jmp gameLoop
+		leftnoupdate:
+		dec cl
+		mov eax, 0
+		add al, score
+		mov dl, xPos[eax]
+		inc al
+		cmp dl, xPos[eax]
+		je chgxdirtoL
+		jmp L3
+
 
 		moveRight:
+		mov ecx, 2
+		add cl, score
+		mov ebx, 0
+		cmp xdir, "L"
+		je rightnoupdate
+		jne L2
+	L2:	
 		call UpdatePlayer
-		inc xPos
+		inc xPos[ebx]
 		call DrawPlayer
+		inc ebx
+	loop L2
+		cmp xdirflag, 1
+		je offxdirflag
 		jmp gameLoop
+		rightnoupdate:
+		dec cl
+		mov eax, 0
+		add al, score
+		mov dl, xPos[eax]
+		inc al
+		cmp dl, xPos[eax]
+		je chgxdirtoR
+		jmp L2
 
+jmp gameLoop
+
+	chgxdirtoL:
+	mov xdir,"L"
+	mov xdirflag, 1
+	jmp L3
+
+	offxdirflag:
+	call DrawPlayer
+	mov xdirflag, 0
 	jmp gameLoop
+
+	chgxdirtoR:
+	mov xdir,"R"
+	mov xdirflag, 1
+	jmp L2
 
 	exitGame:
 	exit
@@ -144,30 +227,20 @@ main ENDP
 
 DrawPlayer PROC
 	; draw player at (xPos,yPos):
-	mov dl,xPos
-	mov dh,yPos
+	mov dl,xPos[ebx]
+	mov dh,yPos[ebx]
 	call Gotoxy
-	mov eax, 0
-	mov ecx, 1
-	add cl, score
-L1:	mov al, snake[EAX]
+	mov al, snake[ebx]
 	call WriteChar
-	inc EAX
-loop L1	
 	ret
 DrawPlayer ENDP
 
 UpdatePlayer PROC
-	mov dl,xPos
-	mov dh,yPos
+	mov dl, xPos[ebx]
+	mov dh,yPos[ebx]
 	call Gotoxy
-	mov ecx, 1
-	add cl, score
-L1:	mov al, " "
+	mov al, " "
 	call WriteChar
-loop L1	
-	call WriteChar
-
 	ret
 UpdatePlayer ENDP
 
@@ -193,6 +266,15 @@ CreateRandomCoin PROC
 	mov yCoinPos,al
 	ret
 CreateRandomCoin ENDP
+
+leftloop PROC
+	L3:	
+		call UpdatePlayer
+		dec xPos[ebx]
+		call DrawPlayer
+		inc ebx
+	loop L3
+leftloop ENDP
 
 END main
 
