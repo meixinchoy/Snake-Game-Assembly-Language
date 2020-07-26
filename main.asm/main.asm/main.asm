@@ -304,3 +304,50 @@ END main
 ;			call Delay
 ;		loop jumpLoop
 ;		jmp gameLoop
+
+
+
+
+;	checkMovement:
+;		mov xPosEql,1
+;		mov yPosEql,1
+;		mov cx, 2
+;		add cl, score
+;	L6:
+;		mov ebx,0
+;		mov bl, cl
+;		dec bl
+;		mov al, xPos[ebx] 
+;		dec bl
+;		cmp xPos[ebx], al 
+;		jne breakx
+;	loop L6
+;		mov cx, 2
+;		add cl, score
+;	L7:
+;		mov ebx,0
+;		mov bl, cl
+;		dec bl
+;		mov al, yPos[ebx] 
+;		dec bl
+;		cmp yPos[ebx], al 
+;		jne breaky
+;	loop L7
+;		jmp snakeLineCmp
+;
+;		snakeLineCmp:
+;		cmp xPosEql, 1
+;		je bodysamedir
+;		mov yPosEql,1
+;		je bodysamedir
+;		jne bodydiffdir
+;
+;		breakx:
+;		mov xPosEql,0
+;		jmp L7
+;		
+;		breaky:
+;		mov yPosEql,0
+;		jmp snakeLineCmp
+;
+
