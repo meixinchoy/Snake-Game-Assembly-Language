@@ -52,7 +52,8 @@ loop L1
 		mov bl,yPos[0]
 		cmp bl,yCoinPos
 		jne notCollecting
-		; player is intersecting coin:
+
+		;player is intersecting coin:
 		inc score
 		mov ebx, 1
 		add bl, score
@@ -68,9 +69,11 @@ loop L1
 		cmp yPos[ebx-2], ah
 		jl incy
 		jg decy
+		
 		incy:
 		inc yPos[ebx]
 		jmp continue
+		
 		decy:
 		dec yPos[ebx]
 		jmp continue
@@ -79,15 +82,16 @@ loop L1
 		cmp yPos[ebx-2], ah
 		jl incx
 		jg decx
+		
 		incx:
 		inc xPos[ebx]
 		jmp continue
+		
 		decx:
 		dec xPos[ebx]
 		jmp continue
 
 		continue:
-		call UpdatePlayer
 		call DrawPlayer
 		call CreateRandomCoin
 		call DrawCoin
@@ -104,6 +108,8 @@ loop L1
 		call WriteString
 		mov al,score
 		call WriteInt		
+
+
 
 		; get user key input:
 		call ReadChar
@@ -126,8 +132,10 @@ loop L1
 		je checkRight
 		jne gameLoop
 
+
+
 		checkBottom:	;snake cant go under the bottom line
-		cmp yPos,28
+		cmp yPos[0],28
 		jne moveDown
 		jmp gameLoop
 
@@ -195,6 +203,8 @@ loop L1
 	loop L4
 		jmp gameLoop
 
+
+
 		moveLeft:
 		mov ecx, 1
 		add cl, score
@@ -216,6 +226,7 @@ loop L1
 		call DrawPlayer
 	loop L3
 		jmp gameLoop
+
 
 
 		moveRight:
@@ -240,13 +251,14 @@ loop L1
 	loop L2
 		jmp gameLoop
 
-
 jmp gameLoop
 
 	exitGame:
 	exit
 INVOKE ExitProcess,0
 main ENDP
+
+
 
 DrawPlayer PROC
 	; draw player at (xPos,yPos):
@@ -260,6 +272,8 @@ DrawPlayer PROC
 	ret
 DrawPlayer ENDP
 
+
+
 UpdatePlayer PROC
 	mov dl, xPos[ebx]
 	mov dh,yPos[ebx]
@@ -271,6 +285,8 @@ UpdatePlayer PROC
 	ret
 UpdatePlayer ENDP
 
+
+
 DrawCoin PROC
 	mov eax,yellow (yellow * 16)
 	call SetTextColor
@@ -281,6 +297,8 @@ DrawCoin PROC
 	call WriteChar
 	ret
 DrawCoin ENDP
+
+
 
 CreateRandomCoin PROC
 	mov eax,118
@@ -294,87 +312,4 @@ CreateRandomCoin PROC
 	ret
 CreateRandomCoin ENDP
 
-leftloop PROC
-	L3:	
-		call UpdatePlayer
-		dec xPos[ebx]
-		call DrawPlayer
-		inc ebx
-	loop L3
-leftloop ENDP
-
 END main
-
-
-; gravity logic:
-;		gravity:
-;		cmp yPos,27
-;		jg onGround
-; make player fall:
-;		call UpdatePlayer
-;		inc yPos
-;		call DrawPlayer
-;		mov eax,80
-;		call Delay
-;		jmp gravity
-;		onGround:
-
-;allow player to jump
-;		moveUp:
-;		; allow player to jump:
-;		mov ecx,1
-;		jumpLoop:
-;			call UpdatePlayer
-;			dec yPos
-;			call DrawPlayer
-;			mov eax,70
-;			call Delay
-;		loop jumpLoop
-;		jmp gameLoop
-
-
-
-
-;	checkMovement:
-;		mov xPosEql,1
-;		mov yPosEql,1
-;		mov cx, 2
-;		add cl, score
-;	L6:
-;		mov ebx,0
-;		mov bl, cl
-;		dec bl
-;		mov al, xPos[ebx] 
-;		dec bl
-;		cmp xPos[ebx], al 
-;		jne breakx
-;	loop L6
-;		mov cx, 2
-;		add cl, score
-;	L7:
-;		mov ebx,0
-;		mov bl, cl
-;		dec bl
-;		mov al, yPos[ebx] 
-;		dec bl
-;		cmp yPos[ebx], al 
-;		jne breaky
-;	loop L7
-;		jmp snakeLineCmp
-;
-;		snakeLineCmp:
-;		cmp xPosEql, 1
-;		je bodysamedir
-;		mov yPosEql,1
-;		je bodysamedir
-;		jne bodydiffdir
-;
-;		breakx:
-;		mov xPosEql,0
-;		jmp L7
-;		
-;		breaky:
-;		mov yPosEql,0
-;		jmp snakeLineCmp
-;
-
