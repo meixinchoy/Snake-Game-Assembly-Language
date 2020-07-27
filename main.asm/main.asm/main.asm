@@ -88,14 +88,14 @@ main PROC
 		jmp gameLoop
 
 		checkLeft:	;snake cant go too far over to the left
-		cmp xPos,1
+
 		jne moveLeft
 		jmp gameLoop
 
 		checkRight:	;snake cant go too far over to the right
 		mov cl, 118
 		sub cl, score
-		cmp xPos,cl
+
 		jne moveRight
 		jmp gameLoop
 
