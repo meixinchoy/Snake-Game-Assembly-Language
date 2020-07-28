@@ -418,7 +418,7 @@ L13:
 loop L13
 	jmp gameLoop
 	XposSame:				; if xpos same, check for ypos
-	cmp yPos[ebx], al
+	cmp yPos[ebx], ah
 	je exitGame				;if collides, snake dies
 	jmp contloop
 
