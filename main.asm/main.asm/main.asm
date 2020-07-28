@@ -32,6 +32,7 @@ StartFlag BYTE 1			;1 means that the program has just started, 0 means otherwise
 
 .code
 main PROC
+
 	; draw walls
 	mov dl,xPosWall[0]
 	mov dh,yPosWall[0]
@@ -153,7 +154,6 @@ loop L1
 		call DrawCoin			
 
 		notCollecting:
-
 		mov eax,white (black * 16)
 		call SetTextColor
 
@@ -402,24 +402,24 @@ delayfunc PROC			;loops to slow down the prog
 	ret
 delayfunc ENDP
 
-CheckSnake PROC
+CheckSnake PROC			;check whether the snake head collides w its body 
 	cmp score, 3
 	jl gameLoop
 	mov al, xPos[0] 
 	mov ah, yPos[0] 
-	mov ebx,4
+	mov ebx,4				;start checking from index 4(5th unit)
 	mov cl,score
 	sub cl,2
 L13:
-	cmp xPos[ebx], al
+	cmp xPos[ebx], al		;check if xpos same ornot
 	je XposSame
 	contloop:
 	inc ebx
 loop L13
 	jmp gameLoop
-	XposSame:
+	XposSame:				; if xpos same, check for ypos
 	cmp yPos[ebx], al
-	je exitGame
+	je exitGame				;if collides, snake dies
 	jmp contloop
 
 CheckSnake ENDP
