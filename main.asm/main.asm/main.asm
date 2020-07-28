@@ -11,6 +11,8 @@ xdivider BYTE 60 DUP("#"),0
 strScore BYTE "Your score is: ",0
 score BYTE 0
 
+str1 BYTE "Try Again?  Y/N",0
+
 snake BYTE "X","x",?,?,?,?,?,?,?,?,?,?
 
 xPos BYTE 40,39,?,?,?,?,?,?,?,?,?,?
@@ -26,7 +28,7 @@ inputChar BYTE ?
 lastInputChar BYTE ?
 
 strSpeed BYTE "Speed: ",0
-speed	WORD 0
+speed	DWORD 0
 
 StartFlag BYTE 1			;1 means that the program has just started, 0 means otherwise
 
@@ -85,10 +87,10 @@ main PROC
 	call WriteString
 	mov eax,0
 	call readInt			; enter integers (1,2,3) 1-quickest
-	mov bx, 150
-	mul bx
-	mov speed, ax
-	add speed, 1000
+	mov ebx, 50
+	mul ebx
+	mov speed, eax
+	add speed, 50
 
 	mov ecx, 2				;draw snake
 	mov ebx,1
@@ -176,7 +178,7 @@ loop L1
 
 		noKey:
 		cmp inputChar,"x"	
-		je exitGame
+		je died
 
 		cmp inputChar,"w"
 		je checkTop
@@ -198,7 +200,7 @@ loop L1
 		dec cl
 		cmp yPos[0],cl
 		jl moveDown
-		je exitGame		;die if go too far down
+		je died		;die if go too far down
 
 		checkLeft:		
 		cmp lastInputChar, "d"
@@ -207,7 +209,7 @@ loop L1
 		inc cl
 		cmp xPos[0],cl
 		jg moveLeft
-		je exitGame		
+		je died		
 
 		checkRight:		
 		cmp lastInputChar, "a"
@@ -216,7 +218,7 @@ loop L1
 		dec cl
 		cmp xPos[0],cl
 		jl moveRight
-		je exitGame		
+		je died		
 
 		checkTop:		
 		cmp lastInputChar, "s"
@@ -225,11 +227,12 @@ loop L1
 		inc cl
 		cmp yPos,cl
 		jg moveUp
-		je exitGame		
+		je died		
 		
 		moveUp:		
-		call delayfunc
-		call delayfunc		;slow down the moving
+		mov eax, speed		;slow down the moving
+		add eax, speed
+		call delay
 		mov ecx, 1
 		add cl, score		;number of iterations to print the snake body n tail
 		mov ebx, 0			;index 0(snake head)
@@ -253,8 +256,9 @@ loop L1
 
 		
 		moveDown:
-		call delayfunc
-		call delayfunc
+		mov eax, speed
+		add eax, speed
+		call delay
 		mov ecx, 1
 		add cl, score
 		mov ebx, 0
@@ -278,7 +282,8 @@ loop L1
 
 
 		moveLeft:
-		call delayfunc
+		mov eax, speed
+		call delay
 		mov ecx, 1
 		add cl, score
 		mov ebx, 0
@@ -302,7 +307,8 @@ loop L1
 
 
 		moveRight:
-		call delayfunc
+		mov eax, speed
+		call delay
 		mov ecx, 1
 		add cl, score
 		mov ebx, 0
@@ -335,10 +341,43 @@ Initialinput:
 	mov StartFlag, 0
 	jmp processInput
 
-	exitGame::
-	mov speed, 10000
-	call delayfunc
+	died::
+	Call ClrScr
+	mov dl,	50
+	mov dh, 20
+	call Gotoxy
+	mov edx, OFFSET str1
+	call WriteString
+	mov dl,	56
+	mov dh, 21
+	call Gotoxy
+	call ReadChar
+	call WriteChar
+	cmp al, "Y"
+	je playagn
+	cmp al, "N"
+	jne died
 	exit
+
+	playagn:
+	mov cl, score
+	mov ebx,1
+	add bl, score
+	L15:
+		mov xPos[ebx], 0
+		mov yPos[ebx], 0
+		mov snake[ebx], 0
+	loop L15
+	mov xPos[0], 40
+	mov yPos[0], 20
+	mov xPos[0], 39
+	mov yPos[0], 20
+	mov score,0
+	mov StartFlag, 1
+	dec yPosWall[3]
+	Call ClrScr
+	jmp main
+
 INVOKE ExitProcess,0
 main ENDP
 
@@ -388,20 +427,6 @@ CreateRandomCoin PROC
 	ret
 CreateRandomCoin ENDP
 
-
-delayfunc PROC			;loops to slow down the prog
-	mov bx, 3000
-	mov cx, speed
-	delay2:
-	dec bx
-	cmp bx,0 
-	jne delay2
-	dec cx
-	cmp cx,0   
-	jne delay2
-	ret
-delayfunc ENDP
-
 CheckSnake PROC			;check whether the snake head collides w its body 
 	cmp score, 3
 	jl gameLoop
@@ -419,7 +444,7 @@ loop L13
 	jmp gameLoop
 	XposSame:				; if xpos same, check for ypos
 	cmp yPos[ebx], ah
-	je exitGame				;if collides, snake dies
+	je died				;if collides, snake dies
 	jmp contloop
 
 CheckSnake ENDP
