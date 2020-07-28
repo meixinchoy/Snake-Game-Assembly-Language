@@ -20,6 +20,7 @@ xCoinPos BYTE ?
 yCoinPos BYTE ?
 
 inputChar BYTE ?
+lastInputChar BYTE ?
 
 speed	WORD 0
 
@@ -117,7 +118,9 @@ loop L1
 		call ReadKey
             jz noKey		;jump if no key is entered
 		processInput:
-		mov inputChar,al
+		mov bl, inputChar
+		mov lastInputChar, bl
+		mov inputChar,al		;assign var
 
 		noKey:
 		cmp inputChar,"x"	
@@ -136,26 +139,33 @@ loop L1
 		je checkRight
 		jne gameLoop
 
-		checkBottom:	;snake cant go under the bottom line
+		checkBottom:	
+		cmp lastInputChar, "w"
+		je dontChgDirection		;cant go down immediately after going up
 		cmp yPos[0],28
 		jne moveDown
-		jmp gameLoop
+		je exitGame		;die if go too far down
 
-		checkLeft:		;snake cant go too far over to the left
+		checkLeft:		
+		cmp lastInputChar, "d"
+		je dontChgDirection
 		cmp xPos[0],1
 		jne moveLeft
-		jmp gameLoop
+		je exitGame		
 
-		checkRight:		;snake cant go too far over to the right
+		checkRight:		
+		cmp lastInputChar, "a"
+		je dontChgDirection
 		cmp xPos[0],118
 		jne moveRight
-		jmp gameLoop
+		je exitGame		
 
-		checkTop:		;snake cant go too far over to the top
+		checkTop:		
+		cmp lastInputChar, "s"
+		je dontChgDirection
 		cmp yPos,1
 		jne moveUp
-		jmp gameLoop
-
+		je exitGame		
 		
 		moveUp:			
 		call delayfunc		;slow down the moving
@@ -252,8 +262,11 @@ loop L1
 	loop L2
 		jmp gameLoop
 
-
 jmp gameLoop
+
+dontChgDirection:
+	mov inputChar, bl
+	jmp noKey
 
 Initialinput:			
 	call readChar		;bc program will glitch if use readKey for the first input
@@ -313,8 +326,8 @@ CreateRandomCoin ENDP
 
 
 delayfunc PROC			;loops to slow down the prog
-	mov bx, 3500
-	mov cx, 3500
+	mov bx, 2500
+	mov cx, 1000
 	delay2:
 	dec bx
 	cmp bx,0 
