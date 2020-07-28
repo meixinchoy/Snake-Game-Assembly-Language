@@ -11,10 +11,10 @@ ground BYTE "-------------------------------------------------------------------
 strScore BYTE "Your score is: ",0
 score BYTE 0
 
-snake BYTE "X","x",?,?,? ,0
+snake BYTE "X","x",?,?,?,?,?,?,?,?,?,?
 
-xPos BYTE 20,19,?,?,?, 0
-yPos BYTE 20,20,?,?,? ,0
+xPos BYTE 20,19,?,?,?,?,?,?,?,?,?,?
+yPos BYTE 20,20,?,?,?,?,?,?,?,?,?,?
 
 xCoinPos BYTE ?
 yCoinPos BYTE ?
@@ -22,6 +22,7 @@ yCoinPos BYTE ?
 inputChar BYTE ?
 lastInputChar BYTE ?
 
+strSpeed BYTE "Speed: ",0
 speed	WORD 0
 
 StartFlag BYTE 1			;1 means that the program has just started, 0 means otherwise
@@ -34,6 +35,27 @@ main PROC
 	call Gotoxy	
 	mov edx,OFFSET ground
 	call WriteString
+
+	; draw score
+	mov dl,0
+	mov dh,0
+	call Gotoxy
+	mov edx,OFFSET strScore
+	call WriteString
+	mov eax,0
+	call WriteInt	
+
+	mov dl,80				;player choose speed
+	mov dh,0
+	call Gotoxy	
+	mov edx,OFFSET strSpeed
+	call WriteString
+	mov eax,0
+	call readInt			; enter integers (1,2,3) 1-quickest
+	mov bx, 150
+	mul bx
+	mov speed, ax
+	add speed, 1000
 
 	mov ecx, 2
 	mov ebx,1
@@ -103,12 +125,10 @@ loop L1
 		mov eax,white (black * 16)
 		call SetTextColor
 
-		; draw score
-		mov dl,0
+		; write score
+		mov dl,15
 		mov dh,0
 		call Gotoxy
-		mov edx,OFFSET strScore
-		call WriteString
 		mov al,score
 		call WriteInt		
 
@@ -167,7 +187,8 @@ loop L1
 		jne moveUp
 		je exitGame		
 		
-		moveUp:			
+		moveUp:		
+		call delayfunc
 		call delayfunc		;slow down the moving
 		mov ecx, 1
 		add cl, score		;number of iterations to print the snake body n tail
@@ -192,6 +213,7 @@ loop L1
 
 		
 		moveDown:
+		call delayfunc
 		call delayfunc
 		mov ecx, 1
 		add cl, score
@@ -326,8 +348,8 @@ CreateRandomCoin ENDP
 
 
 delayfunc PROC			;loops to slow down the prog
-	mov bx, 2500
-	mov cx, 1000
+	mov bx, 3000
+	mov cx, speed
 	delay2:
 	dec bx
 	cmp bx,0 
