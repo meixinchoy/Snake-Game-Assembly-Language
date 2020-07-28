@@ -21,6 +21,10 @@ yCoinPos BYTE ?
 
 inputChar BYTE ?
 
+speed		WORD 0
+
+StartFlag BYTE 1			;1 means that the program has just started, 0 means otherwise
+
 .code
 main PROC
 	; draw ground at (0,29):
@@ -87,7 +91,6 @@ loop L1
 		jmp continue
 
 		continue:
-		call UpdatePlayer
 		call DrawPlayer
 		call CreateRandomCoin
 		call DrawCoin
@@ -106,9 +109,14 @@ loop L1
 		call WriteInt		
 
 		; get user key input:
-		call ReadChar
+		cmp StartFlag, 1
+		je Initialinput
+		call ReadKey
+            jz noKey   
+		processInput:
 		mov inputChar,al
 
+		noKey:
 		; exit game if user types 'x':
 		cmp inputChar,"x"
 		je exitGame
@@ -127,7 +135,7 @@ loop L1
 		jne gameLoop
 
 		checkBottom:	;snake cant go under the bottom line
-		cmp yPos,28
+		cmp yPos[0],28
 		jne moveDown
 		jmp gameLoop
 
@@ -137,9 +145,7 @@ loop L1
 		jmp gameLoop
 
 		checkRight:	;snake cant go too far over to the right
-		mov cl, 118
-		sub cl, score
-		cmp xPos[0],cl
+		cmp xPos[0],118
 		jne moveRight
 		jmp gameLoop
 
@@ -150,6 +156,7 @@ loop L1
 
 
 		moveUp:
+		call delayfunc
 		mov ecx, 1
 		add cl, score
 		mov ebx, 0
@@ -169,11 +176,14 @@ loop L1
 		mov ah,dh
 		call DrawPlayer
 	loop L5
-		jmp gameLoop
+		jne gameLoop
+
+		
 
 
 
 		moveDown:
+		call delayfunc
 		mov ecx, 1
 		add cl, score
 		mov ebx, 0
@@ -196,6 +206,7 @@ loop L1
 		jmp gameLoop
 
 		moveLeft:
+		call delayfunc
 		mov ecx, 1
 		add cl, score
 		mov ebx, 0
@@ -219,6 +230,7 @@ loop L1
 
 
 		moveRight:
+		call delayfunc
 		mov ecx, 1
 		add cl, score
 		mov ebx, 0
@@ -243,7 +255,12 @@ loop L1
 
 jmp gameLoop
 
-	exitGame:
+Initialinput:
+	call readChar
+	mov StartFlag, 0
+	jmp processInput
+
+	exitGame::
 	exit
 INVOKE ExitProcess,0
 main ENDP
@@ -294,87 +311,18 @@ CreateRandomCoin PROC
 	ret
 CreateRandomCoin ENDP
 
-leftloop PROC
-	L3:	
-		call UpdatePlayer
-		dec xPos[ebx]
-		call DrawPlayer
-		inc ebx
-	loop L3
-leftloop ENDP
+; start delay
+delayfunc PROC
+mov bx, 3500
+mov cx, 3500
+delay2:
+dec bx
+cmp bx,0 
+jne delay2
+dec cx
+cmp cx,0    
+jne delay2
+ret
+delayfunc ENDP
 
 END main
-
-
-; gravity logic:
-;		gravity:
-;		cmp yPos,27
-;		jg onGround
-; make player fall:
-;		call UpdatePlayer
-;		inc yPos
-;		call DrawPlayer
-;		mov eax,80
-;		call Delay
-;		jmp gravity
-;		onGround:
-
-;allow player to jump
-;		moveUp:
-;		; allow player to jump:
-;		mov ecx,1
-;		jumpLoop:
-;			call UpdatePlayer
-;			dec yPos
-;			call DrawPlayer
-;			mov eax,70
-;			call Delay
-;		loop jumpLoop
-;		jmp gameLoop
-
-
-
-
-;	checkMovement:
-;		mov xPosEql,1
-;		mov yPosEql,1
-;		mov cx, 2
-;		add cl, score
-;	L6:
-;		mov ebx,0
-;		mov bl, cl
-;		dec bl
-;		mov al, xPos[ebx] 
-;		dec bl
-;		cmp xPos[ebx], al 
-;		jne breakx
-;	loop L6
-;		mov cx, 2
-;		add cl, score
-;	L7:
-;		mov ebx,0
-;		mov bl, cl
-;		dec bl
-;		mov al, yPos[ebx] 
-;		dec bl
-;		cmp yPos[ebx], al 
-;		jne breaky
-;	loop L7
-;		jmp snakeLineCmp
-;
-;		snakeLineCmp:
-;		cmp xPosEql, 1
-;		je bodysamedir
-;		mov yPosEql,1
-;		je bodysamedir
-;		jne bodydiffdir
-;
-;		breakx:
-;		mov xPosEql,0
-;		jmp L7
-;		
-;		breaky:
-;		mov yPosEql,0
-;		jmp snakeLineCmp
-;
-
