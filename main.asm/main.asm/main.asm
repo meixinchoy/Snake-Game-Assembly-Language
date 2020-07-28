@@ -6,15 +6,18 @@ INCLUDE Irvine32.inc
 
 .data
 
-ground BYTE "------------------------------------------------------------------------------------------------------------------------",0
+xdivider BYTE 60 DUP("#"),0
 
 strScore BYTE "Your score is: ",0
 score BYTE 0
 
 snake BYTE "X","x",?,?,?,?,?,?,?,?,?,?
 
-xPos BYTE 20,19,?,?,?,?,?,?,?,?,?,?
+xPos BYTE 40,39,?,?,?,?,?,?,?,?,?,?
 yPos BYTE 20,20,?,?,?,?,?,?,?,?,?,?
+
+xPosWall BYTE 29,29,89,89			;upperLeft, lowerLeft, upperRight, lowerRignt 
+yPosWall BYTE 4,25,4,25
 
 xCoinPos BYTE ?
 yCoinPos BYTE ?
@@ -29,24 +32,53 @@ StartFlag BYTE 1			;1 means that the program has just started, 0 means otherwise
 
 .code
 main PROC
-	; draw ground at (0,29):
-	mov dl,0
-	mov dh,29
+	; draw walls
+	mov dl,xPosWall[0]
+	mov dh,yPosWall[0]
 	call Gotoxy	
-	mov edx,OFFSET ground
-	call WriteString
+	mov edx,OFFSET xdivider
+	call WriteString			;upper wall
+
+	mov dl,xPosWall[1]
+	mov dh,yPosWall[1]
+	call Gotoxy	
+	mov edx,OFFSET xdivider		
+	call WriteString			;lower wall
+
+	mov dl, xPosWall[2]
+	mov dh, yPosWall[2]
+	mov eax,"#"	
+	inc yPosWall[3]
+	L11: 
+	call Gotoxy	
+	call WriteChar	
+	inc dh
+	cmp dh, yPosWall[3]			;right wall	
+	jl L11
+
+	mov dl, xPosWall[0]
+	mov dh, yPosWall[0]
+	mov eax,"#"	
+	L12: 
+	call Gotoxy	
+	call WriteChar	
+	inc dh
+	cmp dh, yPosWall[3]			;left wall
+	jl L12
+
+
 
 	; draw score
-	mov dl,0
-	mov dh,0
+	mov dl,2
+	mov dh,1
 	call Gotoxy
 	mov edx,OFFSET strScore
 	call WriteString
 	mov eax,0
 	call WriteInt	
 
-	mov dl,80				;player choose speed
-	mov dh,0
+	mov dl,100				;player choose speed
+	mov dh,1
 	call Gotoxy	
 	mov edx,OFFSET strSpeed
 	call WriteString
@@ -57,7 +89,7 @@ main PROC
 	mov speed, ax
 	add speed, 1000
 
-	mov ecx, 2
+	mov ecx, 2				;draw snake
 	mov ebx,1
 L1: 
 	call DrawPlayer
@@ -69,7 +101,7 @@ loop L1
 
 	call Randomize				;set up finish
 
-	gameLoop:
+	gameLoop::
 
 		; getting points:
 		mov ebx,0
@@ -126,8 +158,8 @@ loop L1
 		call SetTextColor
 
 		; write score
-		mov dl,15
-		mov dh,0
+		mov dl,17
+		mov dh,1
 		call Gotoxy
 		mov al,score
 		call WriteInt		
@@ -162,29 +194,37 @@ loop L1
 		checkBottom:	
 		cmp lastInputChar, "w"
 		je dontChgDirection		;cant go down immediately after going up
-		cmp yPos[0],28
-		jne moveDown
+		mov cl, yPosWall[1]
+		dec cl
+		cmp yPos[0],cl
+		jl moveDown
 		je exitGame		;die if go too far down
 
 		checkLeft:		
 		cmp lastInputChar, "d"
 		je dontChgDirection
-		cmp xPos[0],1
-		jne moveLeft
+		mov cl, xPosWall[0]
+		inc cl
+		cmp xPos[0],cl
+		jg moveLeft
 		je exitGame		
 
 		checkRight:		
 		cmp lastInputChar, "a"
 		je dontChgDirection
-		cmp xPos[0],118
-		jne moveRight
+		mov cl, xPosWall[2]
+		dec cl
+		cmp xPos[0],cl
+		jl moveRight
 		je exitGame		
 
 		checkTop:		
 		cmp lastInputChar, "s"
 		je dontChgDirection
-		cmp yPos,1
-		jne moveUp
+		mov cl, yPosWall[0]
+		inc cl
+		cmp yPos,cl
+		jg moveUp
 		je exitGame		
 		
 		moveUp:		
@@ -209,7 +249,7 @@ loop L1
 		mov ah,dh			;move the current position back into alah
 		call DrawPlayer
 	loop L5
-		jne gameLoop
+		call CheckSnake
 
 		
 		moveDown:
@@ -234,7 +274,7 @@ loop L1
 		mov ah,dh
 		call DrawPlayer
 	loop L4
-		jmp gameLoop
+		call CheckSnake
 
 
 		moveLeft:
@@ -258,7 +298,7 @@ loop L1
 		mov ah,dh
 		call DrawPlayer
 	loop L3
-		jmp gameLoop
+		call CheckSnake
 
 
 		moveRight:
@@ -282,7 +322,7 @@ loop L1
 		mov ah,dh
 		call DrawPlayer
 	loop L2
-		jmp gameLoop
+		call CheckSnake
 
 jmp gameLoop
 
@@ -295,7 +335,9 @@ Initialinput:
 	mov StartFlag, 0
 	jmp processInput
 
-	exitGame:
+	exitGame::
+	mov speed, 10000
+	call delayfunc
 	exit
 INVOKE ExitProcess,0
 main ENDP
@@ -335,13 +377,13 @@ DrawCoin PROC
 DrawCoin ENDP
 
 CreateRandomCoin PROC
-	mov eax,118
-	call RandomRange	;0-117
-	inc eax				;1-118
+	mov eax,58
+	call RandomRange	;0-59
+	add eax, 30			;30-88
 	mov xCoinPos,al
-	mov eax,28
-	call RandomRange	;0-27
-	inc eax				;1-28
+	mov eax,19
+	call RandomRange	;0-19
+	add eax, 5			;5-24
 	mov yCoinPos,al
 	ret
 CreateRandomCoin ENDP
@@ -360,4 +402,25 @@ delayfunc PROC			;loops to slow down the prog
 	ret
 delayfunc ENDP
 
+CheckSnake PROC
+	cmp score, 3
+	jl gameLoop
+	mov al, xPos[0] 
+	mov ah, yPos[0] 
+	mov ebx,4
+	mov cl,score
+	sub cl,2
+L13:
+	cmp xPos[ebx], al
+	je XposSame
+	contloop:
+	inc ebx
+loop L13
+	jmp gameLoop
+	XposSame:
+	cmp yPos[ebx], al
+	je exitGame
+	jmp contloop
+
+CheckSnake ENDP
 END main
