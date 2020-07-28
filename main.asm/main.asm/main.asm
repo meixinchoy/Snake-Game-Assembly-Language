@@ -157,6 +157,7 @@ loop L1
 		jmp gameLoop
 
 
+
 		moveUp:
 		mov ecx, 1
 		add cl, score
