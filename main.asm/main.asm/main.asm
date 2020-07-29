@@ -11,7 +11,10 @@ xdivider BYTE 60 DUP("#"),0
 strScore BYTE "Your score is: ",0
 score BYTE 0
 
-str1 BYTE "Try Again?  Y/N",0
+str1 BYTE "Try Again?  1=yes, 0=no",0
+str2 BYTE "invalid input",0
+str3 BYTE "you died ",0
+str4 BYTE " (Press any key to continue)",0
 
 snake BYTE "X","x",?,?,?,?,?,?,?,?,?,?
 
@@ -85,12 +88,11 @@ main PROC
 	call Gotoxy	
 	mov edx,OFFSET strSpeed
 	call WriteString
+	mov ebx, 60
 	mov eax,0
 	call readInt			; enter integers (1,2,3) 1-quickest
-	mov ebx, 50
 	mul ebx
 	mov speed, eax
-	add speed, 50
 
 	mov ecx, 2				;draw snake
 	mov ebx,1
@@ -343,6 +345,16 @@ Initialinput:
 
 	died::
 	Call ClrScr
+	mov dl,	35
+	mov dh, 20
+	call Gotoxy
+	mov edx, OFFSET str3
+	call WriteString
+	invalidnum:
+	mov edx, OFFSET str4
+	call WriteString
+	call ReadChar
+	Call ClrScr
 	mov dl,	50
 	mov dh, 20
 	call Gotoxy
@@ -351,15 +363,18 @@ Initialinput:
 	mov dl,	56
 	mov dh, 21
 	call Gotoxy
-	call ReadChar
-	call WriteChar
-	cmp al, "Y"
+	call ReadInt
+	cmp al, 1
 	je playagn
-	cmp al, "N"
-	jne died
-	exit
+	cmp al, 0
+	je exitgame
+	mov edx, OFFSET str2
+	call WriteString
+	jmp invalidnum
+
 
 	playagn:
+	mov ecx,0
 	mov cl, score
 	mov ebx,1
 	add bl, score
@@ -367,17 +382,20 @@ Initialinput:
 		mov xPos[ebx], 0
 		mov yPos[ebx], 0
 		mov snake[ebx], 0
+		dec ebx
 	loop L15
 	mov xPos[0], 40
+	mov xPos[1], 39
 	mov yPos[0], 20
-	mov xPos[0], 39
-	mov yPos[0], 20
+	mov yPos[1], 20
 	mov score,0
 	mov StartFlag, 1
 	dec yPosWall[3]
 	Call ClrScr
 	jmp main
-
+	
+	exitgame:
+	exit
 INVOKE ExitProcess,0
 main ENDP
 
