@@ -17,7 +17,7 @@ str3 BYTE "you died ",0
 str4 BYTE " (Press any key to continue)",0
 blank BYTE "                                            ",0
 
-snake BYTE "X","x",?,?,?,?,?,?,?,?,?,?
+snake BYTE 60 DUP("x")
 
 xPos BYTE 40,39,?,?,?,?,?,?,?,?,?,?
 yPos BYTE 20,20,?,?,?,?,?,?,?,?,?,?
@@ -181,7 +181,7 @@ loop L1
 
 		noKey:
 		cmp inputChar,"x"	
-		je died
+		je exitgame
 
 		cmp inputChar,"w"
 		je checkTop
