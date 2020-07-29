@@ -15,6 +15,7 @@ str1 BYTE "Try Again?  1=yes, 0=no",0
 str2 BYTE "invalid input",0
 str3 BYTE "you died ",0
 str4 BYTE " (Press any key to continue)",0
+blank BYTE "                                            ",0
 
 snake BYTE "X","x",?,?,?,?,?,?,?,?,?,?
 
@@ -88,7 +89,7 @@ main PROC
 	call Gotoxy	
 	mov edx,OFFSET strSpeed
 	call WriteString
-	mov ebx, 60
+	mov ebx, 45
 	mov eax,0
 	call readInt			; enter integers (1,2,3) 1-quickest
 	mul ebx
@@ -344,14 +345,15 @@ Initialinput:
 	jmp processInput
 
 	died::
-	Call ClrScr
+	mov eax, 1000
+	call delay
+	Call ClrScr			
 	mov dl,	35
 	mov dh, 20
 	call Gotoxy
-	mov edx, OFFSET str3
+	mov edx, OFFSET str3	;"you died"
 	call WriteString
-	invalidnum:
-	mov edx, OFFSET str4
+	mov edx, OFFSET str4	;"enter any key to cont"
 	call WriteString
 	call ReadChar
 	Call ClrScr
@@ -359,37 +361,38 @@ Initialinput:
 	mov dh, 20
 	call Gotoxy
 	mov edx, OFFSET str1
-	call WriteString
+	call WriteString		;"try again?"
+	invalidnum:
 	mov dl,	56
 	mov dh, 21
 	call Gotoxy
+	mov edx, OFFSET blank
+	call WriteString
+	mov dh, 21
+	mov dl,	56
+	call Gotoxy
 	call ReadInt
 	cmp al, 1
-	je playagn
+	je playagn				;playagn
 	cmp al, 0
-	je exitgame
-	mov edx, OFFSET str2
-	call WriteString
+	je exitgame				;exitgame
+	mov dh,	19
+	call Gotoxy
+	mov edx, OFFSET str2	
+	call WriteString		;invalid num
 	jmp invalidnum
 
 
-	playagn:
-	mov ecx,0
-	mov cl, score
-	mov ebx,1
-	add bl, score
-	L15:
-		mov xPos[ebx], 0
-		mov yPos[ebx], 0
-		mov snake[ebx], 0
-		dec ebx
-	loop L15
+	;reinitialise everything
+	playagn:			
 	mov xPos[0], 40
 	mov xPos[1], 39
 	mov yPos[0], 20
 	mov yPos[1], 20
 	mov score,0
 	mov StartFlag, 1
+	mov lastInputChar, 0
+	mov inputChar,0
 	dec yPosWall[3]
 	Call ClrScr
 	jmp main
