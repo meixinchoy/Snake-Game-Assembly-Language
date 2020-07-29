@@ -181,7 +181,7 @@ loop L1
 
 		noKey:
 		cmp inputChar,"x"	
-		je died
+		je exitgame
 
 		cmp inputChar,"w"
 		je checkTop
