@@ -6,23 +6,23 @@ INCLUDE Irvine32.inc
 
 .data
 
-xdivider BYTE 60 DUP("#"),0
+xWall BYTE 60 DUP("#"),0
 
 strScore BYTE "Your score is: ",0
 score BYTE 0
 
 str1 BYTE "Try Again?  1=yes, 0=no",0
-str2 BYTE "invalid input",0
+invalidInput BYTE "invalid input",0
 str3 BYTE "you died ",0
 str4 BYTE " (Press any key to continue)",0
-blank BYTE "                                            ",0
+blank BYTE "                                     ",0
 
-snake BYTE 60 DUP("x")
+snake BYTE "X", 100 DUP("x")
 
-xPos BYTE 40,39,?,?,?,?,?,?,?,?,?,?
-yPos BYTE 20,20,?,?,?,?,?,?,?,?,?,?
+xPos BYTE 40,39,99 DUP(?)
+yPos BYTE 20,20,99 DUP(?)
 
-xPosWall BYTE 29,29,89,89			;upperLeft, lowerLeft, upperRight, lowerRignt 
+xPosWall BYTE 29,29,89,89			;position of upperLeft, lowerLeft, upperRight, lowerRignt wall 
 yPosWall BYTE 4,25,4,25
 
 xCoinPos BYTE ?
@@ -31,80 +31,22 @@ yCoinPos BYTE ?
 inputChar BYTE ?
 lastInputChar BYTE ?
 
-strSpeed BYTE "Speed: ",0
+strSpeed BYTE "Speed (1-fast, 2-medium, 3-slow): ",0
 speed	DWORD 0
-
-StartFlag BYTE 1			;1 means that the program has just started, 0 means otherwise
 
 .code
 main PROC
+	call DrawWall			;draw walls
+	call DrawScoreboard		;draw scoreboard
+	call ChooseSpeed		;let player to choose Speed
 
-	; draw walls
-	mov dl,xPosWall[0]
-	mov dh,yPosWall[0]
-	call Gotoxy	
-	mov edx,OFFSET xdivider
-	call WriteString			;upper wall
-
-	mov dl,xPosWall[1]
-	mov dh,yPosWall[1]
-	call Gotoxy	
-	mov edx,OFFSET xdivider		
-	call WriteString			;lower wall
-
-	mov dl, xPosWall[2]
-	mov dh, yPosWall[2]
-	mov eax,"#"	
-	inc yPosWall[3]
-	L11: 
-	call Gotoxy	
-	call WriteChar	
-	inc dh
-	cmp dh, yPosWall[3]			;right wall	
-	jl L11
-
-	mov dl, xPosWall[0]
-	mov dh, yPosWall[0]
-	mov eax,"#"	
-	L12: 
-	call Gotoxy	
-	call WriteChar	
-	inc dh
-	cmp dh, yPosWall[3]			;left wall
-	jl L12
-
-
-
-	; draw score
-	mov dl,2
-	mov dh,1
-	call Gotoxy
-	mov edx,OFFSET strScore
-	call WriteString
-	mov eax,0
-	call WriteInt	
-
-	mov dl,100				;player choose speed
-	mov dh,1
-	call Gotoxy	
-	mov edx,OFFSET strSpeed
-	call WriteString
-	mov ebx, 45
-	mov eax,0
-	call readInt			; enter integers (1,2,3) 1-quickest
-	mul ebx
-	mov speed, eax
-
-	mov ecx, 2				;draw snake
-	mov ebx,1
-L1: 
-	call DrawPlayer
+	mov ebx,1			
+	call DrawPlayer			;draw snake(start with 2 units)
 	dec ebx
-loop L1
+	call DrawPlayer
 
 	call CreateRandomCoin
 	call DrawCoin
-
 	call Randomize				;set up finish
 
 	gameLoop::
@@ -158,7 +100,6 @@ loop L1
 		call CreateRandomCoin
 		call DrawCoin			
 
-		notCollecting:
 		mov eax,white (black * 16)
 		call SetTextColor
 
@@ -169,9 +110,15 @@ loop L1
 		mov al,score
 		call WriteInt		
 
+		notCollecting:
+		mov eax,white (black * 16)
+		call SetTextColor
+
+		mov dl,18
+		mov dh,1
+		call Gotoxy
+
 		; get user key input
-		cmp StartFlag, 1
-		je Initialinput
 		call ReadKey
             jz noKey		;jump if no key is entered
 		processInput:
@@ -339,11 +286,6 @@ dontChgDirection:
 	mov inputChar, bl
 	jmp noKey
 
-Initialinput:			
-	call readChar		;bc program will glitch if use readKey for the first input
-	mov StartFlag, 0
-	jmp processInput
-
 	died::
 	mov eax, 1000
 	call delay
@@ -378,7 +320,7 @@ Initialinput:
 	je exitgame				;exitgame
 	mov dh,	19
 	call Gotoxy
-	mov edx, OFFSET str2	
+	mov edx, OFFSET invalidInput	
 	call WriteString		;invalid num
 	jmp invalidnum
 
@@ -390,7 +332,6 @@ Initialinput:
 	mov yPos[0], 20
 	mov yPos[1], 20
 	mov score,0
-	mov StartFlag, 1
 	mov lastInputChar, 0
 	mov inputChar,0
 	dec yPosWall[3]
@@ -401,6 +342,90 @@ Initialinput:
 	exit
 INVOKE ExitProcess,0
 main ENDP
+
+
+DrawWall PROC					;procedure to draw wall
+	mov dl,xPosWall[0]
+	mov dh,yPosWall[0]
+	call Gotoxy	
+	mov edx,OFFSET xWall
+	call WriteString			;draw upper wall
+
+	mov dl,xPosWall[1]
+	mov dh,yPosWall[1]
+	call Gotoxy	
+	mov edx,OFFSET xWall		
+	call WriteString			;draw lower wall
+
+	mov dl, xPosWall[2]
+	mov dh, yPosWall[2]
+	mov eax,"#"	
+	inc yPosWall[3]
+	L11: 
+	call Gotoxy	
+	call WriteChar	
+	inc dh
+	cmp dh, yPosWall[3]			;draw right wall	
+	jl L11
+
+	mov dl, xPosWall[0]
+	mov dh, yPosWall[0]
+	mov eax,"#"	
+	L12: 
+	call Gotoxy	
+	call WriteChar	
+	inc dh
+	cmp dh, yPosWall[3]			;draw left wall
+	jl L12
+	ret
+DrawWall ENDP
+
+
+DrawScoreboard PROC				;procedure to draw scoreboard
+	mov dl,2
+	mov dh,1
+	call Gotoxy
+	mov edx,OFFSET strScore		;print string that indicates score
+	call WriteString
+	mov eax,"0"
+	call WriteChar				;scoreboard starts with 0
+	ret
+DrawScoreboard ENDP
+
+
+ChooseSpeed PROC			;procedure for player to choose speed
+	mov edx,0
+	mov dl,71				
+	mov dh,1
+	call Gotoxy	
+	mov edx,OFFSET strSpeed
+	call WriteString
+	mov ebx, 40
+	mov eax,0
+	call readInt			; enter integers (1,2,3) 1-quickest
+	cmp ax,1
+	jl invalidspeed
+	cmp ax, 3
+	jg invalidspeed
+	mul ebx
+	mov speed, eax
+	ret
+	invalidspeed:
+	mov dl,105				
+	mov dh,1
+	call Gotoxy	
+	mov edx, OFFSET invalidInput
+	call WriteString
+	mov ax, 1500
+	call delay
+	mov dl,105				
+	mov dh,1
+	call Gotoxy	
+	mov edx, OFFSET blank
+	call writeString
+	call ChooseSpeed
+	ret
+ChooseSpeed ENDP
 
 DrawPlayer PROC
 	; draw player at (xPos,yPos)
