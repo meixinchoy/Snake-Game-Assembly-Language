@@ -51,7 +51,7 @@ main PROC
 
 	gameLoop::
 
-		; getting points:
+		; getting points
 		mov ebx,0
 		mov bl,xPos[0]
 		cmp bl,xCoinPos
@@ -60,7 +60,7 @@ main PROC
 		cmp bl,yCoinPos
 		jne notCollecting
 
-		; snake is eating coin:
+		; snake is eating coin
 		inc score
 		mov ebx, 1
 		add bl, score
