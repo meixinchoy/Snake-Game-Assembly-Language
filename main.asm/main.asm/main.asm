@@ -47,84 +47,23 @@ main PROC
 
 	call CreateRandomCoin
 	call DrawCoin
-	call Randomize				;set up finish
+	call Randomize			;set up finish
 
 	gameLoop::
-
-		; getting points
-		mov ebx,0
-		mov bl,xPos[0]
-		cmp bl,xCoinPos
-		jne notCollecting
-		mov bl,yPos[0]
-		cmp bl,yCoinPos
-		jne notCollecting
-
-		; snake is eating coin
-		inc score
-		mov ebx, 1
-		add bl, score
-		mov snake[ebx], "x"		;add one unit to the snake
-		mov ah, yPos[ebx-1]
-		mov al, xPos[ebx-1]	
-		mov xPos[ebx], al
-		mov yPos[ebx], ah		;pos of new tail = pos of old tail
-
-		cmp xPos[ebx-2], al		;check if the old tail and the unit before is on the yAxis
-		jne checky				;jump if not on the yAxis
-
-		cmp yPos[ebx-2], ah		;check if the new tail should be above or below of the old tail 
-		jl incy			
-		jg decy
-		incy:					;inc if below
-		inc yPos[ebx]
-		jmp continue
-		decy:					;dec if above
-		dec yPos[ebx]
-		jmp continue
-
-		checky:					;old tail and the unit before is on the xAxis
-		cmp yPos[ebx-2], ah		;check if the new tail should be right or left of the old tail
-		jl incx
-		jg decx
-		incx:					;inc if right
-		inc xPos[ebx]			
-		jmp continue
-		decx:					;dec if left
-		dec xPos[ebx]
-		jmp continue
-
-		;update game
-		continue:
-		call DrawPlayer
-		call CreateRandomCoin
-		call DrawCoin			
-
-		mov eax,white (black * 16)
+		mov eax,white (black * 16)		;set snake and score colour
 		call SetTextColor
 
-		; write score
-		mov dl,17
-		mov dh,1
-		call Gotoxy
-		mov al,score
-		call WriteInt		
-
-		notCollecting:
-		mov eax,white (black * 16)
-		call SetTextColor
-
-		mov dl,18
+		mov dl,106						;move cursor to coordinates
 		mov dh,1
 		call Gotoxy
 
 		; get user key input
 		call ReadKey
-            jz noKey		;jump if no key is entered
+            jz noKey					;jump if no key is entered
 		processInput:
 		mov bl, inputChar
 		mov lastInputChar, bl
-		mov inputChar,al		;assign var
+		mov inputChar,al				;assign variables
 
 		noKey:
 		cmp inputChar,"x"	
@@ -279,6 +218,66 @@ main PROC
 		call DrawPlayer
 	loop L2
 		call CheckSnake
+
+	; getting points
+		checkcoin::
+		mov ebx,0
+		mov bl,xPos[0]
+		cmp bl,xCoinPos
+		jne gameloop
+		mov bl,yPos[0]
+		cmp bl,yCoinPos
+		jne gameloop
+
+		; snake is eating coin
+		inc score
+		mov ebx, 1
+		add bl, score
+		mov snake[ebx], "x"		;add one unit to the snake
+		mov ah, yPos[ebx-1]
+		mov al, xPos[ebx-1]	
+		mov xPos[ebx], al
+		mov yPos[ebx], ah		;pos of new tail = pos of old tail
+
+		cmp xPos[ebx-2], al		;check if the old tail and the unit before is on the yAxis
+		jne checky				;jump if not on the yAxis
+
+		cmp yPos[ebx-2], ah		;check if the new tail should be above or below of the old tail 
+		jl incy			
+		jg decy
+		incy:					;inc if below
+		inc yPos[ebx]
+		jmp continue
+		decy:					;dec if above
+		dec yPos[ebx]
+		jmp continue
+
+		checky:					;old tail and the unit before is on the xAxis
+		cmp yPos[ebx-2], ah		;check if the new tail should be right or left of the old tail
+		jl incx
+		jg decx
+		incx:					;inc if right
+		inc xPos[ebx]			
+		jmp continue
+		decx:					;dec if left
+		dec xPos[ebx]
+		jmp continue
+
+		;update game
+		continue:
+		call DrawPlayer
+		call CreateRandomCoin
+		call DrawCoin			
+
+		mov eax,white (black * 16)
+		call SetTextColor
+
+		; write score
+		mov dl,17
+		mov dh,1
+		call Gotoxy
+		mov al,score
+		call WriteInt		
 
 jmp gameLoop
 
@@ -475,7 +474,7 @@ CreateRandomCoin ENDP
 
 CheckSnake PROC			;check whether the snake head collides w its body 
 	cmp score, 3
-	jl gameLoop
+	jl checkcoin
 	mov al, xPos[0] 
 	mov ah, yPos[0] 
 	mov ebx,4				;start checking from index 4(5th unit)
@@ -487,7 +486,7 @@ L13:
 	contloop:
 	inc ebx
 loop L13
-	jmp gameLoop
+	jmp checkcoin
 	XposSame:				; if xpos same, check for ypos
 	cmp yPos[ebx], ah
 	je died				;if collides, snake dies
