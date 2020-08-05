@@ -341,12 +341,12 @@ CheckSnake PROC				;check whether the snake head collides w its body
 	mov ebx,4				;start checking from index 4(5th unit)
 	mov ecx,1
 	add cl,score
-L13:
+checkXposition:
 	cmp xPos[ebx], al		;check if xpos same ornot
 	je XposSame
 	contloop:
 	inc ebx
-loop L13
+loop checkXposition
 	jmp checkcoin
 	XposSame:				; if xpos same, check for ypos
 	cmp yPos[ebx], ah
