@@ -11,10 +11,10 @@ xWall BYTE 52 DUP("#"),0
 strScore BYTE "Your score is: ",0
 score BYTE 0
 
-str1 BYTE "Try Again?  1=yes, 0=no",0
+strTryAgain BYTE "Try Again?  1=yes, 0=no",0
 invalidInput BYTE "invalid input",0
-str3 BYTE "you died ",0
-str4 BYTE " (Press any key to continue)",0
+strYouDied BYTE "you died ",0
+strPoints BYTE " point(s)",0
 blank BYTE "                                     ",0
 
 snake BYTE "X", 104 DUP("x")
@@ -45,11 +45,11 @@ main PROC
 drawSnake:
 	call DrawPlayer			;draw snake(start with 5 units)
 	inc ebx
-	loop drawSnake
+loop drawSnake
 
+	call Randomize
 	call CreateRandomCoin
-	call DrawCoin
-	call Randomize			;set up finish
+	call DrawCoin			;set up finish
 
 	gameLoop::
 		mov dl,106						;move cursor to coordinates
@@ -58,7 +58,7 @@ drawSnake:
 
 		; get user key input
 		call ReadKey
-        jz noKey					;jump if no key is entered
+        jz noKey						;jump if no key is entered
 		processInput:
 		mov bl, inputChar
 		mov lastInputChar, bl
@@ -187,55 +187,18 @@ drawSnake:
 jmp gameLoop					;reiterate the gameloop
 
 
-dontChgDirection:			;dont allow user to change direction
+	dontChgDirection:			;dont allow user to change direction
 	mov inputChar, bl		;set current inputChar as previous
 	jmp noKey				;jump back to continue moving the same direction 
 
 
 	died::
-	mov eax, 1000
-	call delay
-	Call ClrScr			
-	mov dl,	35
-	mov dh, 20
-	call Gotoxy
-	mov edx, OFFSET str3	;"you died"
-	call WriteString
-	mov edx, OFFSET str4	;"enter any key to cont"
-	call WriteString
-	call ReadChar
-	Call ClrScr
-	mov dl,	50
-	mov dh, 20
-	call Gotoxy
-	mov edx, OFFSET str1
-	call WriteString		;"try again?"
-	invalidnum:
-	mov dl,	56
-	mov dh, 21
-	call Gotoxy
-	mov edx, OFFSET blank
-	call WriteString
-	mov dh, 21
-	mov dl,	56
-	call Gotoxy
-	call ReadInt
-	cmp al, 1
-	je playagn				;playagn
-	cmp al, 0
-	je exitgame				;exitgame
-	mov dh,	19
-	call Gotoxy
-	mov edx, OFFSET invalidInput	
-	call WriteString		;invalid num
-	jmp invalidnum
-
-
+	call YouDied
 	 
-	playagn:			
+	playagn::			
 	call ReinitializeGame			;reinitialise everything
 	
-	exitgame:
+	exitgame::
 	exit
 INVOKE ExitProcess,0
 main ENDP
@@ -295,37 +258,37 @@ ChooseSpeed PROC			;procedure for player to choose speed
 	mov dl,71				
 	mov dh,1
 	call Gotoxy	
-	mov edx,OFFSET strSpeed
+	mov edx,OFFSET strSpeed	; prompt to enter integers (1,2,3)
 	call WriteString
-	mov ebx, 40
+	mov ebx, 38				;38 milisecond difference per speed level
 	mov eax,0
-	call readInt			; enter integers (1,2,3) 1-quickest
-	cmp ax,1
+	call readInt			
+	cmp ax,1				;input validation
 	jl invalidspeed
 	cmp ax, 3
 	jg invalidspeed
-	mul ebx
-	mov speed, eax
+	mul ebx	
+	mov speed, eax			;assign speed variable in mililiseconds
 	ret
-	invalidspeed:
+
+	invalidspeed:			;jump here if user entered an invalid number
 	mov dl,105				
 	mov dh,1
 	call Gotoxy	
-	mov edx, OFFSET invalidInput
+	mov edx, OFFSET invalidInput		;print error message		
 	call WriteString
 	mov ax, 1500
 	call delay
 	mov dl,105				
 	mov dh,1
 	call Gotoxy	
-	mov edx, OFFSET blank
+	mov edx, OFFSET blank				;erase error message after 1.5 secs of delay
 	call writeString
-	call ChooseSpeed
+	call ChooseSpeed					;call procedure for user to choose again
 	ret
 ChooseSpeed ENDP
 
-DrawPlayer PROC
-	; draw player at (xPos,yPos)
+DrawPlayer PROC			; draw player at (xPos,yPos)
 	mov dl,xPos[ebx]
 	mov dh,yPos[ebx]
 	call Gotoxy
@@ -336,7 +299,7 @@ DrawPlayer PROC
 	ret
 DrawPlayer ENDP
 
-UpdatePlayer PROC
+UpdatePlayer PROC		; erase player at (xPos,yPos)
 	mov dl, xPos[ebx]
 	mov dh,yPos[ebx]
 	call Gotoxy
@@ -372,7 +335,7 @@ CreateRandomCoin PROC				;procedure to create a random coin
 	ret
 CreateRandomCoin ENDP
 
-CheckSnake PROC			;check whether the snake head collides w its body 
+CheckSnake PROC				;check whether the snake head collides w its body 
 	mov al, xPos[0] 
 	mov ah, yPos[0] 
 	mov ebx,4				;start checking from index 4(5th unit)
@@ -387,7 +350,7 @@ loop L13
 	jmp checkcoin
 	XposSame:				; if xpos same, check for ypos
 	cmp yPos[ebx], ah
-	je died				;if collides, snake dies
+	je died					;if collides, snake dies
 	jmp contloop
 
 CheckSnake ENDP
@@ -457,7 +420,56 @@ EatingCoin PROC
 	ret
 EatingCoin ENDP
 
-ReinitializeGame PROC
+
+YouDied PROC
+	mov eax, 1000
+	call delay
+	Call ClrScr	
+	
+	mov dl,	57
+	mov dh, 12
+	call Gotoxy
+	mov edx, OFFSET strYouDied	;"you died"
+	call WriteString
+
+	mov dl,	56
+	mov dh, 14
+	call Gotoxy
+	mov eax, 0
+	mov al, score
+	call WriteInt
+	mov edx, OFFSET strPoints	;display score
+	call WriteString
+
+	mov dl,	50
+	mov dh, 18
+	call Gotoxy
+	mov edx, OFFSET strTryAgain
+	call WriteString		;"try again?"
+
+	retry:
+	mov dh, 19
+	mov dl,	56
+	call Gotoxy
+	call ReadInt			;get user input
+	cmp al, 1
+	je playagn				;playagn
+	cmp al, 0
+	je exitgame				;exitgame
+
+	mov dh,	17
+	call Gotoxy
+	mov edx, OFFSET invalidInput	;"Invalid input"
+	call WriteString		
+	mov dl,	56
+	mov dh, 19
+	call Gotoxy
+	mov edx, OFFSET blank			;erase previous input
+	call WriteString
+	jmp retry						;let user input again
+YouDied ENDP
+
+ReinitializeGame PROC		;procedure to reinitialize everything
 	mov xPos[0], 45
 	mov xPos[1], 44
 	mov xPos[2], 43
