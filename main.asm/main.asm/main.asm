@@ -50,6 +50,8 @@ main PROC
 	call Randomize			;set up finish
 
 	gameLoop::
+		mov eax,white (black * 16)		;set snake and score colour
+		call SetTextColor
 
 		mov dl,106						;move cursor to coordinates
 		mov dh,1
@@ -58,18 +60,19 @@ main PROC
 		; get user key input
 		call ReadKey
             jz noKey					;jump if no key is entered
+		processInput:
 		mov bl, inputChar
 		mov lastInputChar, bl
 		mov inputChar,al				;assign variables
 
 		noKey:
-		cmp inputChar,"x"				;exit game if user input x
+		cmp inputChar,"x"	
 		je exitgame
 
-		cmp inputChar,"w"				
+		cmp inputChar,"w"
 		je checkTop
 
-		cmp inputChar,"s"				
+		cmp inputChar,"s"
 		je checkBottom
 
 		cmp inputChar,"a"
@@ -77,27 +80,25 @@ main PROC
 
 		cmp inputChar,"d"
 		je checkRight
-		jne gameLoop					; reloop if user didnt enter any meaningful key
+		jne gameLoop
 
-
-		; check whether can continue moving
 		checkBottom:	
 		cmp lastInputChar, "w"
-		je dontChgDirection				;cant go down immediately after going up
+		je dontChgDirection		;cant go down immediately after going up
 		mov cl, yPosWall[1]
-		dec cl							;one unit ubove the y-coordinate of lowerbound
-		cmp yPos[0],cl					
+		dec cl
+		cmp yPos[0],cl
 		jl moveDown
-		je died							;die if crash into the wall
+		je died		;die if go too far down
 
-		checkLeft:						
+		checkLeft:		
 		cmp lastInputChar, "d"
-		je dontChgDirection				
+		je dontChgDirection
 		mov cl, xPosWall[0]
 		inc cl
 		cmp xPos[0],cl
 		jg moveLeft
-		je died							; check for left	
+		je died		
 
 		checkRight:		
 		cmp lastInputChar, "a"
@@ -106,7 +107,7 @@ main PROC
 		dec cl
 		cmp xPos[0],cl
 		jl moveRight
-		je died							; check for right
+		je died		
 
 		checkTop:		
 		cmp lastInputChar, "s"
@@ -115,25 +116,35 @@ main PROC
 		inc cl
 		cmp yPos,cl
 		jg moveUp
-		je died							; check for up
+		je died		
 		
-		; move up
 		moveUp:		
-		mov eax, speed					;slow down the moving
+		mov eax, speed		;slow down the moving
 		add eax, speed
 		call delay
 		mov ecx, 1
-		add cl, score					;number of iterations to print the snake body n tail
-		mov ebx, 0						;index 0(snake head)
+		add cl, score		;number of iterations to print the snake body n tail
+		mov ebx, 0			;index 0(snake head)
 		call UpdatePlayer	
 		mov ah, yPos[ebx]	
-		mov al, xPos[ebx]				;alah stores the pos of the snake's next unit 
-		dec yPos[ebx]					;move the head up
-		call DrawPlayer					
-		call DrawBody					
+		mov al, xPos[ebx]	;alah stores the pos of the snake's next unit 
+		dec yPos[ebx]		;move the head up
+		call DrawPlayer		
+	L5:	
+		inc ebx				;loop to print remaining units of snake
+		call UpdatePlayer
+		mov dl, xPos[ebx]
+		mov dh, yPos[ebx]	;dldh temporarily stores the current pos of the unit 
+		mov yPos[ebx], ah
+		mov xPos[ebx], al	;assign new position to the unit
+		mov al, dl
+		mov ah,dh			;move the current position back into alah
+		call DrawPlayer
+	loop L5
 		call CheckSnake
+
 		
-		moveDown:						; move down
+		moveDown:
 		mov eax, speed
 		add eax, speed
 		call delay
@@ -144,12 +155,22 @@ main PROC
 		mov ah, yPos[ebx]
 		mov al, xPos[ebx]
 		inc yPos[ebx]
-		call DrawPlayer					
-		call DrawBody					
+		call DrawPlayer
+	L4:	
+		inc ebx
+		call UpdatePlayer
+		mov dl, xPos[ebx]
+		mov dh, yPos[ebx]
+		mov yPos[ebx], ah
+		mov xPos[ebx], al
+		mov al, dl
+		mov ah,dh
+		call DrawPlayer
+	loop L4
 		call CheckSnake
 
 
-		moveLeft:						; move left
+		moveLeft:
 		mov eax, speed
 		call delay
 		mov ecx, 1
@@ -159,12 +180,22 @@ main PROC
 		mov ah, yPos[ebx]
 		mov al, xPos[ebx]
 		dec xPos[ebx]
-		call DrawPlayer					
-		call DrawBody					
+		call DrawPlayer
+	L3:	
+		inc ebx
+		call UpdatePlayer
+		mov dl, xPos[ebx]
+		mov dh, yPos[ebx]
+		mov yPos[ebx], ah
+		mov xPos[ebx], al
+		mov al, dl
+		mov ah,dh
+		call DrawPlayer
+	loop L3
 		call CheckSnake
 
 
-		moveRight:						; move right
+		moveRight:
 		mov eax, speed
 		call delay
 		mov ecx, 1
@@ -174,8 +205,18 @@ main PROC
 		mov ah, yPos[ebx]
 		mov al, xPos[ebx]
 		inc xPos[ebx]
-		call DrawPlayer					
-		call DrawBody					
+		call DrawPlayer
+	L2:	
+		inc ebx
+		call UpdatePlayer
+		mov dl, xPos[ebx]
+		mov dh, yPos[ebx]
+		mov yPos[ebx], ah
+		mov xPos[ebx], al
+		mov al, dl
+		mov ah,dh
+		call DrawPlayer
+	loop L2
 		call CheckSnake
 
 	; getting points
@@ -228,6 +269,9 @@ main PROC
 		call CreateRandomCoin
 		call DrawCoin			
 
+		mov eax,white (black * 16)
+		call SetTextColor
+
 		; write score
 		mov dl,17
 		mov dh,1
@@ -237,9 +281,9 @@ main PROC
 
 jmp gameLoop
 
-	dontChgDirection:		;dont allow user to change direction
-	mov inputChar, bl		;set current inputChar as previous
-	jmp noKey				;jump back to continue moving the same direction 
+dontChgDirection:
+	mov inputChar, bl
+	jmp noKey
 
 	died::
 	mov eax, 1000
@@ -353,39 +397,38 @@ ChooseSpeed PROC			;procedure for player to choose speed
 	mov dl,71				
 	mov dh,1
 	call Gotoxy	
-	mov edx,OFFSET strSpeed	; prompt to enter integers (1,2,3)
+	mov edx,OFFSET strSpeed
 	call WriteString
-	mov ebx, 36				;36milisecond difference per speed level
+	mov ebx, 40
 	mov eax,0
-	call readInt			
-	cmp ax,1				;input validation
-	jl invalidspeed			
+	call readInt			; enter integers (1,2,3) 1-quickest
+	cmp ax,1
+	jl invalidspeed
 	cmp ax, 3
-	jg invalidspeed			
+	jg invalidspeed
 	mul ebx
-	mov speed, eax			;assign speed variable in mililiseconds
-	ret						;return if speed has been chosen
-
-	invalidspeed:			;jump here if user entered invalid input
+	mov speed, eax
+	ret
+	invalidspeed:
 	mov dl,105				
 	mov dh,1
 	call Gotoxy	
-	mov edx, OFFSET invalidInput		;print error message
-	call WriteString		
+	mov edx, OFFSET invalidInput
+	call WriteString
 	mov ax, 1500
-	call delay				
+	call delay
 	mov dl,105				
 	mov dh,1
 	call Gotoxy	
-	mov edx, OFFSET blank	;erase error message after 1.5 secs of delay
-	call writeString		
-	call ChooseSpeed		;call procedure again for user to choose speed
+	mov edx, OFFSET blank
+	call writeString
+	call ChooseSpeed
 	ret
 ChooseSpeed ENDP
 
-
 DrawPlayer PROC
-	mov dl,xPos[ebx]	; draw player at (xPos,yPos)
+	; draw player at (xPos,yPos)
+	mov dl,xPos[ebx]
 	mov dh,yPos[ebx]
 	call Gotoxy
 	mov dl, al			;temporarily save al in dl
@@ -395,9 +438,8 @@ DrawPlayer PROC
 	ret
 DrawPlayer ENDP
 
-
 UpdatePlayer PROC
-	mov dl, xPos[ebx]	; erase player at (dl,dh)
+	mov dl, xPos[ebx]
 	mov dh,yPos[ebx]
 	call Gotoxy
 	mov dl, al			;temporarily save al in dl
@@ -407,22 +449,18 @@ UpdatePlayer PROC
 	ret
 UpdatePlayer ENDP
 
-
-DrawCoin PROC						;procedure to draw coin
+DrawCoin PROC
 	mov eax,yellow (yellow * 16)
-	call SetTextColor				;set color to yellow for coin
+	call SetTextColor
 	mov dl,xCoinPos
 	mov dh,yCoinPos
-	call Gotoxy						;go to position of coin
-	mov al,"X"		
-	call WriteChar					;draw coin
-	mov eax,white (black * 16)
-	call SetTextColor				;reset color to black and white
+	call Gotoxy
+	mov al,"X"
+	call WriteChar
 	ret
 DrawCoin ENDP
 
-
-CreateRandomCoin PROC		;procedure to create a random coin
+CreateRandomCoin PROC
 	mov eax,58
 	call RandomRange	;0-59
 	add eax, 30			;30-88
@@ -434,42 +472,25 @@ CreateRandomCoin PROC		;procedure to create a random coin
 	ret
 CreateRandomCoin ENDP
 
-
-DrawBody PROC				;procedure to print body of the snake
-	printbodyloop:	
-		inc ebx				;loop to print remaining units of snake
-		call UpdatePlayer
-		mov dl, xPos[ebx]
-		mov dh, yPos[ebx]	;dldh temporarily stores the current pos of the unit 
-		mov yPos[ebx], ah
-		mov xPos[ebx], al	;assign new position to the unit
-		mov al, dl
-		mov ah,dh			;move the current position back into alah
-		call DrawPlayer
-	loop printbodyloop
-	ret
-DrawBody ENDP
-
-
 CheckSnake PROC			;check whether the snake head collides w its body 
 	cmp score, 3
-	jl checkcoin			; snake with less than 5 units cant collide with itself
+	jl checkcoin
 	mov al, xPos[0] 
 	mov ah, yPos[0] 
 	mov ebx,4				;start checking from index 4(5th unit)
 	mov cl,score
-	sub cl,2				;loop score-2 times from the 5th to the last unit of snake
+	sub cl,2
 L13:
 	cmp xPos[ebx], al		;check if xpos same ornot
 	je XposSame
 	contloop:
 	inc ebx
 loop L13
-	jmp checkcoin			; jump to return if no collision
+	jmp checkcoin
 	XposSame:				; if xpos same, check for ypos
 	cmp yPos[ebx], ah
-	je died					;if collides, snake dies
-	jmp contloop			;continue loop to check whether the other snake units collide with the head
-	jmp checkcoin
+	je died				;if collides, snake dies
+	jmp contloop
+
 CheckSnake ENDP
 END main
