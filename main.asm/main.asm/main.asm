@@ -93,7 +93,7 @@ loop drawSnake
 		je died					;die if crash into the wall
 
 		checkLeft:		
-		cmp lastInputChar, "+"
+		cmp lastInputChar, "+"	;check whether its the start of the game
 		je dontGoLeft
 		cmp lastInputChar, "d"
 		je dontChgDirection
@@ -189,13 +189,13 @@ loop drawSnake
 jmp gameLoop					;reiterate the gameloop
 
 
-	dontChgDirection:			;dont allow user to change direction
+	dontChgDirection:		;dont allow user to change direction
 	mov inputChar, bl		;set current inputChar as previous
 	jmp noKey				;jump back to continue moving the same direction 
 
-	dontGoLeft:
-	mov	inputChar, "+"
-	jmp gameLoop
+	dontGoLeft:				;forbids the snake to go left at the begining of the game
+	mov	inputChar, "+"		;set current inputChar as "+"
+	jmp gameLoop			;restart the game loop
 
 	died::
 	call YouDied
@@ -337,7 +337,23 @@ CreateRandomCoin PROC				;procedure to create a random coin
 	call RandomRange	;0-17
 	add eax, 6			;6-23
 	mov yCoinPos,al
-	ret
+
+	mov ecx, 5
+	add cl, score				;loop number of snake unit
+	mov esi, 0
+checkCoinXPos:
+	movzx eax,  xCoinPos
+	cmp al, xPos[esi]		
+	je checkCoinYPos			;jump if xPos of snake at esi = xPos of coin
+	continueloop:
+	inc esi
+loop checkCoinXPos
+	ret							; return when coin is not on snake
+	checkCoinYPos:
+	movzx eax, yCoinPos			
+	cmp al, yPos[esi]
+	jne continueloop			; jump back to continue loop if yPos of snake at esi != yPos of coin
+	call CreateRandomCoin		; coin generated on snake, calling function again to create another set of coordinates
 CreateRandomCoin ENDP
 
 CheckSnake PROC				;check whether the snake head collides w its body 
