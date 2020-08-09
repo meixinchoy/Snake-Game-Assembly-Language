@@ -265,7 +265,7 @@ ChooseSpeed PROC			;procedure for player to choose speed
 	call Gotoxy	
 	mov edx,OFFSET strSpeed	; prompt to enter integers (1,2,3)
 	call WriteString
-	mov ebx, 38				;38 milisecond difference per speed level
+	mov ebx, 40				; milisecond difference per speed level
 	mov eax,0
 	call readInt			
 	cmp ax,1				;input validation
