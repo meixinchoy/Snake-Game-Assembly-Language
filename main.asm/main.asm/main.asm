@@ -28,8 +28,8 @@ yPosWall BYTE 5,24,5,24
 xCoinPos BYTE ?
 yCoinPos BYTE ?
 
-inputChar BYTE ?
-lastInputChar BYTE ?
+inputChar BYTE "+"					; + denotes the start of the game
+lastInputChar BYTE ?				
 
 strSpeed BYTE "Speed (1-fast, 2-medium, 3-slow): ",0
 speed	DWORD 0
@@ -93,6 +93,8 @@ loop drawSnake
 		je died					;die if crash into the wall
 
 		checkLeft:		
+		cmp lastInputChar, "+"
+		je dontGoLeft
 		cmp lastInputChar, "d"
 		je dontChgDirection
 		mov cl, xPosWall[0]
@@ -191,6 +193,9 @@ jmp gameLoop					;reiterate the gameloop
 	mov inputChar, bl		;set current inputChar as previous
 	jmp noKey				;jump back to continue moving the same direction 
 
+	dontGoLeft:
+	mov	inputChar, "+"
+	jmp gameLoop
 
 	died::
 	call YouDied
@@ -482,7 +487,7 @@ ReinitializeGame PROC		;procedure to reinitialize everything
 	mov yPos[4], 15			;reinitialize snake position
 	mov score,0				;reinitialize score
 	mov lastInputChar, 0
-	mov inputChar,0			;reinitialize inputChar and lastInputChar
+	mov	inputChar, "+"			;reinitialize inputChar and lastInputChar
 	dec yPosWall[3]			;reset wall position
 	Call ClrScr
 	jmp main				;start over the game
