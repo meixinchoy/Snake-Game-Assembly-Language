@@ -3,9 +3,9 @@ This program is a personal project made by me when learning computer organizatio
 
 # Installation
 To start the game you will need to install the following items:
-1. visual studios   (can be downloaded [here](https://visualstudio.microsoft.com/downloads/)) 
+1. visual studios   (can be installed [here](https://visualstudio.microsoft.com/downloads/)) 
 
-2. Irvine32 library     (can be downloaded [here](https://github.com/Eazybright/Irvine32))
+2. Irvine32 library     (can be installed [here](https://github.com/meixinchoy/Irvine-library))
 
 
 # Controls
