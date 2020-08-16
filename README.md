@@ -3,23 +3,29 @@ This program is a personal project made by me when learning computer organizatio
 
 # Installation
 To start the game you will need to install the following items:
-1. visual studios   (can be downloaded [here](https://visualstudio.microsoft.com/downloads/))
-   
+1. visual studios   (can be downloaded [here](https://visualstudio.microsoft.com/downloads/)) 
+
 2. Irvine32 library     (can be downloaded [here](https://github.com/Eazybright/Irvine32))
 
 
-Configuration of VS
--------------------
+# Controls
+w: move up\
+a: move left\
+s: move down\
+d: move right\
+x: exit game\
+enter: pause game\
+(make sure that your capslock is disabled)
 
+# Screenshots
 
-# Additional Notes
+![](screenshots/choosespeed.png)
 
-![1](https://user-images.githubusercontent.com/16638876/26972268-5643281a-4d11-11e7-851e-1fd6253bbb9e.png)
+![](screenshots/startingscreen.png)
 
-![2](https://user-images.githubusercontent.com/16638876/26972276-5c4341dc-4d11-11e7-868b-4529c6f319fd.png)
+![](screenshots/snake%20moving.png)
 
-![3](https://user-images.githubusercontent.com/16638876/26972284-61cfe3c6-4d11-11e7-8828-bd991efeb40c.png)
-
+![](screenshots/youdied.png)
 
 # Additional Notes
 Although the program code for the master branch and the develop branch slightly differs from each other, both codes are completed and able to output and run the full program. The master branch is slightly longer than the develop branch but it is easier to understand whereas the develop branch is shorter as I have combined move up, down, left and right into one section. Feel free to check out both versions of my program.
