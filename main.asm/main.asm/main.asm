@@ -42,14 +42,14 @@ main PROC
 
 	mov esi,0
 	mov ecx,5
-drawSnake:
-	call DrawPlayer			;draw snake(start with 5 units)
+drawInitialSnake:
+	call DrawSnake			;draw snake(start with 5 units)
 	inc esi
-loop drawSnake
+loop drawInitialSnake
 
 	call Randomize
-	call CreateRandomCoin
-	call DrawCoin			;set up finish
+	call CreateRandomFood
+	call DrawFood			;set up finish
 
 	gameLoop::
 		mov dl,106						;move cursor to coordinates
@@ -67,16 +67,12 @@ loop drawSnake
 		noKey:
 		cmp inputChar,"x"	
 		je exitgame						;exit game if user input x
-
 		cmp inputChar,"w"
 		je checkTop
-
 		cmp inputChar,"s"
 		je checkBottom
-
 		cmp inputChar,"a"
 		je checkLeft
-
 		cmp inputChar,"d"
 		je checkRight
 		jne gameLoop					; reloop if no meaningful key was entered
@@ -89,7 +85,7 @@ loop drawSnake
 		mov cl, yPosWall[1]
 		dec cl					;one unit ubove the y-coordinate of the lower bound
 		cmp yPos[0],cl
-		jl moveDown
+		jl move
 		je died					;die if crash into the wall
 
 		checkLeft:		
@@ -100,7 +96,7 @@ loop drawSnake
 		mov cl, xPosWall[0]
 		inc cl
 		cmp xPos[0],cl
-		jg moveLeft
+		jg move
 		je died					; check for left	
 
 		checkRight:		
@@ -109,7 +105,7 @@ loop drawSnake
 		mov cl, xPosWall[2]
 		dec cl
 		cmp xPos[0],cl
-		jl moveRight
+		jl move
 		je died					; check for right	
 
 		checkTop:		
@@ -118,59 +114,44 @@ loop drawSnake
 		mov cl, yPosWall[0]
 		inc cl
 		cmp yPos,cl
-		jg moveUp
+		jg move
 		je died				; check for up	
 		
-		moveUp:		
+
+		move:	
 		mov eax, speed		;slow down the moving
-		add eax, speed
+		cmp inputChar, "a"
+		je samespeed
+		cmp inputChar, "d"
+		je samespeed
+		add eax, speed		;speed up more for up and down
+		samespeed:		
 		call delay
 		mov esi, 0			;index 0(snake head)
 		call UpdatePlayer	
 		mov ah, yPos[esi]	
 		mov al, xPos[esi]	;alah stores the pos of the snake's next unit 
-		dec yPos[esi]		;move the head up
-		call DrawPlayer		
-		call DrawBody
-		call CheckSnake
-
 		
-		moveDown:			;move down
-		mov eax, speed
-		add eax, speed
-		call delay
-		mov esi, 0
-		call UpdatePlayer
-		mov ah, yPos[esi]
-		mov al, xPos[esi]
-		inc yPos[esi]
-		call DrawPlayer
-		call DrawBody
-		call CheckSnake
+		cmp inputChar, "a"
+		je headLeft
+		cmp inputChar, "s"
+		je headDown
+		cmp inputChar, "d"
+		je headRight
 
+		dec yPos[esi]		;move the head up if inputChar == "w"
+		jmp displaySnake
+		headDown:			
+		inc yPos[esi]		;move the head down
+		jmp displaySnake
+		headLeft:
+		dec xPos[esi]		;move the head left
+		jmp displaySnake
+		headRight:	
+		inc xPos[esi]		;move the head right
 
-		moveLeft:			;move left
-		mov eax, speed
-		call delay
-		mov esi, 0
-		call UpdatePlayer
-		mov ah, yPos[esi]
-		mov al, xPos[esi]
-		dec xPos[esi]
-		call DrawPlayer
-		call DrawBody
-		call CheckSnake
-
-
-		moveRight:			;move right
-		mov eax, speed
-		call delay
-		mov esi, 0
-		call UpdatePlayer
-		mov ah, yPos[esi]
-		mov al, xPos[esi]
-		inc xPos[esi]
-		call DrawPlayer
+		displaySnake:
+		call DrawSnake		
 		call DrawBody
 		call CheckSnake
 
@@ -183,10 +164,8 @@ loop drawSnake
 		mov bl,yPos[0]
 		cmp bl,yCoinPos
 		jne gameloop			;reloop if snake is not intersecting with coin
-
 		call EatingCoin			;call to update score, append snake and generate new coin	
-
-jmp gameLoop					;reiterate the gameloop
+jmp gameLoop			;reiterate the gameloop
 
 
 	dontChgDirection:		;dont allow user to change direction
@@ -245,7 +224,6 @@ DrawWall PROC					;procedure to draw wall
 	ret
 DrawWall ENDP
 
-
 DrawScoreboard PROC				;procedure to draw scoreboard
 	mov dl,2
 	mov dh,1
@@ -256,7 +234,6 @@ DrawScoreboard PROC				;procedure to draw scoreboard
 	call WriteChar				;scoreboard starts with 0
 	ret
 DrawScoreboard ENDP
-
 
 ChooseSpeed PROC			;procedure for player to choose speed
 	mov edx,0
@@ -293,7 +270,7 @@ ChooseSpeed PROC			;procedure for player to choose speed
 	ret
 ChooseSpeed ENDP
 
-DrawPlayer PROC			; draw player at (xPos,yPos)
+DrawSnake PROC			; draw player at (xPos,yPos)
 	mov dl,xPos[esi]
 	mov dh,yPos[esi]
 	call Gotoxy
@@ -302,7 +279,7 @@ DrawPlayer PROC			; draw player at (xPos,yPos)
 	call WriteChar
 	mov al, dl			
 	ret
-DrawPlayer ENDP
+DrawSnake ENDP
 
 UpdatePlayer PROC		; erase player at (xPos,yPos)
 	mov dl, xPos[esi]
@@ -315,7 +292,7 @@ UpdatePlayer PROC		; erase player at (xPos,yPos)
 	ret
 UpdatePlayer ENDP
 
-DrawCoin PROC						;procedure to draw coin
+DrawFood PROC						;procedure to draw coin
 	mov eax,yellow (yellow * 16)
 	call SetTextColor				;set color to yellow for coin
 	mov dl,xCoinPos
@@ -326,9 +303,9 @@ DrawCoin PROC						;procedure to draw coin
 	mov eax,white (black * 16)		;reset color to black and white
 	call SetTextColor
 	ret
-DrawCoin ENDP
+DrawFood ENDP
 
-CreateRandomCoin PROC				;procedure to create a random coin
+CreateRandomFood PROC				;procedure to create a random coin
 	mov eax,49
 	call RandomRange	;0-49
 	add eax, 35			;35-84
@@ -341,20 +318,20 @@ CreateRandomCoin PROC				;procedure to create a random coin
 	mov ecx, 5
 	add cl, score				;loop number of snake unit
 	mov esi, 0
-checkCoinXPos:
+	movzx ebx, yCoinPos
 	movzx eax,  xCoinPos
+checkCoinXPos:
 	cmp al, xPos[esi]		
 	je checkCoinYPos			;jump if xPos of snake at esi = xPos of coin
 	continueloop:
 	inc esi
 loop checkCoinXPos
 	ret							; return when coin is not on snake
-	checkCoinYPos:
-	movzx eax, yCoinPos			
-	cmp al, yPos[esi]
+	checkCoinYPos:		
+	cmp bl, yPos[esi]
 	jne continueloop			; jump back to continue loop if yPos of snake at esi != yPos of coin
-	call CreateRandomCoin		; coin generated on snake, calling function again to create another set of coordinates
-CreateRandomCoin ENDP
+	call CreateRandomFood		; coin generated on snake, calling function again to create another set of coordinates
+CreateRandomFood ENDP
 
 CheckSnake PROC				;check whether the snake head collides w its body 
 	mov al, xPos[0] 
@@ -373,24 +350,23 @@ loop checkXposition
 	cmp yPos[esi], ah
 	je died					;if collides, snake dies
 	jmp contloop
-
 CheckSnake ENDP
 
 DrawBody PROC				;procedure to print body of the snake
-		mov ecx, 4
-		add cl, score		;number of iterations to print the snake body n tail	
-		printbodyloop:	
-		inc esi				;loop to print remaining units of snake
-		call UpdatePlayer
-		mov dl, xPos[esi]
-		mov dh, yPos[esi]	;dldh temporarily stores the current pos of the unit 
-		mov yPos[esi], ah
-		mov xPos[esi], al	;assign new position to the unit
-		mov al, dl
-		mov ah,dh			;move the current position back into alah
-		call DrawPlayer
-		cmp esi, ecx
-		jl printbodyloop
+	mov ecx, 4
+	add cl, score		;number of iterations to print the snake body n tail	
+	printbodyloop:	
+	inc esi				;loop to print remaining units of snake
+	call UpdatePlayer
+	mov dl, xPos[esi]
+	mov dh, yPos[esi]	;dldh temporarily stores the current pos of the unit 
+	mov yPos[esi], ah
+	mov xPos[esi], al	;assign new position to the unit
+	mov al, dl
+	mov ah,dh			;move the current position back into alah
+	call DrawSnake
+	cmp esi, ecx
+	jl printbodyloop
 	ret
 DrawBody ENDP
 
@@ -408,7 +384,7 @@ EatingCoin PROC
 	cmp xPos[esi-2], al		;check if the old tail and the unit before is on the yAxis
 	jne checky				;jump if not on the yAxis
 
-	cmp yPos[esi-2], ah		;check if the new tail should be above or below of the old tail 
+	cmp yPos[esi-2], ah		;on y axis, check if the new tail should be above or below of the old tail 
 	jl incy			
 	jg decy
 	incy:					;inc if below
@@ -429,9 +405,9 @@ EatingCoin PROC
 	dec xPos[esi]
 
 	continue:				;add snake tail and update new coin
-	call DrawPlayer		
-	call CreateRandomCoin
-	call DrawCoin			
+	call DrawSnake		
+	call CreateRandomFood
+	call DrawFood			
 
 	mov dl,17				; write updated score
 	mov dh,1
@@ -445,8 +421,7 @@ EatingCoin ENDP
 YouDied PROC
 	mov eax, 1000
 	call delay
-	Call ClrScr	
-	
+	Call ClrScr					;clear screen
 	mov dl,	57
 	mov dh, 12
 	call Gotoxy
@@ -490,20 +465,17 @@ YouDied PROC
 	jmp retry						;let user input again
 YouDied ENDP
 
+
 ReinitializeGame PROC		;procedure to reinitialize everything
-	mov xPos[0], 45
-	mov xPos[1], 44
-	mov xPos[2], 43
-	mov xPos[3], 42
-	mov xPos[4], 41
-	mov yPos[0], 15
-	mov yPos[1], 15
-	mov yPos[2], 15
-	mov yPos[3], 15
-	mov yPos[4], 15			;reinitialize snake position
+	mov bl, 40
+	mov ecx, 5
+resetSnakePos:				;reinitialize snake position
+	inc bl
+	mov xPos[ecx-1], bl
+	mov yPos[ecx-1], 15
+loop resetSnakePos	
 	mov score,0				;reinitialize score
-	mov lastInputChar, 0
-	mov	inputChar, "+"			;reinitialize inputChar and lastInputChar
+	mov	inputChar, "+"		;reinitialize inputChar 
 	dec yPosWall[3]			;reset wall position
 	Call ClrScr
 	jmp main				;start over the game
