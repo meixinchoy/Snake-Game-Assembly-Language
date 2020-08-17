@@ -138,11 +138,8 @@ loop drawInitialSnake
 		je headDown
 		cmp inputChar, "d"
 		je headRight
-		cmp inputChar, "w"
-		je headUp
 
-		headUp:
-		dec yPos[esi]		;move the head up
+		dec yPos[esi]		;move the head up if inputChar == "w"
 		jmp displaySnake
 		headDown:			
 		inc yPos[esi]		;move the head down
@@ -152,7 +149,6 @@ loop drawInitialSnake
 		jmp displaySnake
 		headRight:	
 		inc xPos[esi]		;move the head right
-		jmp displaySnake
 
 		displaySnake:
 		call DrawSnake		
@@ -322,17 +318,17 @@ CreateRandomFood PROC				;procedure to create a random coin
 	mov ecx, 5
 	add cl, score				;loop number of snake unit
 	mov esi, 0
-checkCoinXPos:
+	movzx ebx, yCoinPos
 	movzx eax,  xCoinPos
+checkCoinXPos:
 	cmp al, xPos[esi]		
 	je checkCoinYPos			;jump if xPos of snake at esi = xPos of coin
 	continueloop:
 	inc esi
 loop checkCoinXPos
 	ret							; return when coin is not on snake
-	checkCoinYPos:
-	movzx eax, yCoinPos			
-	cmp al, yPos[esi]
+	checkCoinYPos:		
+	cmp bl, yPos[esi]
 	jne continueloop			; jump back to continue loop if yPos of snake at esi != yPos of coin
 	call CreateRandomFood		; coin generated on snake, calling function again to create another set of coordinates
 CreateRandomFood ENDP
