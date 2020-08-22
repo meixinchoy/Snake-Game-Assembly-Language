@@ -431,8 +431,7 @@ YouDied PROC
 	mov dl,	56
 	mov dh, 14
 	call Gotoxy
-	mov eax, 0
-	mov al, score
+	movzx eax, score
 	call WriteInt
 	mov edx, OFFSET strPoints	;display score
 	call WriteString
