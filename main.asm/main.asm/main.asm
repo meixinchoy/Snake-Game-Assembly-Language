@@ -14,7 +14,7 @@ score BYTE 0
 strTryAgain BYTE "Try Again?  1=yes, 0=no",0
 invalidInput BYTE "invalid input",0
 strYouDied BYTE "you died ",0
-strPoints BYTE " point(s)",0
+strCurrentScore BYTE "Your Score: ",0
 blank BYTE "                                     ",0
 
 snake BYTE "X", 104 DUP("x")
@@ -433,7 +433,7 @@ YouDied PROC
 	call Gotoxy
 	movzx eax, score
 	call WriteInt
-	mov edx, OFFSET strPoints	;display score
+	mov edx, OFFSET strCurrentScore	;display score
 	call WriteString
 
 	mov dl,	50
