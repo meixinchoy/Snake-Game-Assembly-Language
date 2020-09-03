@@ -10,11 +10,13 @@ xWall BYTE 52 DUP("#"),0
 
 strScore BYTE "Your score is: ",0
 score BYTE 0
+highScore BYTE 0
 
 strTryAgain BYTE "Try Again?  1=yes, 0=no",0
 invalidInput BYTE "invalid input",0
 strYouDied BYTE "you died ",0
-strPoints BYTE " point(s)",0
+strCurrentScore BYTE "Your Score: ",0
+strHighScore BYTE "High Score: ",0
 blank BYTE "                                     ",0
 
 snake BYTE "X", 104 DUP("x")
@@ -177,6 +179,13 @@ jmp gameLoop			;reiterate the gameloop
 	jmp gameLoop			;restart the game loop
 
 	died::
+	movzx ecx, score
+	cmp highScore, cl
+	jb newHighScore
+	call YouDied
+
+	newHighScore:
+	mov highScore, cl
 	call YouDied
 	 
 	playagn::			
@@ -423,28 +432,37 @@ YouDied PROC
 	call delay
 	Call ClrScr					;clear screen
 	mov dl,	57
-	mov dh, 12
+	mov dh, 11
 	call Gotoxy
 	mov edx, OFFSET strYouDied	;"you died"
 	call WriteString
 
-	mov dl,	56
-	mov dh, 14
+	mov dl,	54
+	mov dh, 13
 	call Gotoxy
+	mov edx, OFFSET strCurrentScore	;display score
+	call WriteString
 	mov eax, 0
 	mov al, score
 	call WriteInt
-	mov edx, OFFSET strPoints	;display score
+
+
+	mov dl,	54
+	mov dh, 14
+	call Gotoxy
+	mov edx, OFFSET strHighScore	;display Highscore
 	call WriteString
+	movzx eax, highScore
+	call WriteInt
 
 	mov dl,	50
-	mov dh, 18
+	mov dh, 17
 	call Gotoxy
 	mov edx, OFFSET strTryAgain
 	call WriteString		;"try again?"
 
 	retry:
-	mov dh, 19
+	mov dh, 18
 	mov dl,	56
 	call Gotoxy
 	call ReadInt			;get user input
@@ -453,12 +471,12 @@ YouDied PROC
 	cmp al, 0
 	je exitgame				;exitgame
 
-	mov dh,	17
+	mov dh,	16
 	call Gotoxy
 	mov edx, OFFSET invalidInput	;"Invalid input"
 	call WriteString		
 	mov dl,	56
-	mov dh, 19
+	mov dh, 18
 	call Gotoxy
 	mov edx, OFFSET blank			;erase previous input
 	call WriteString
