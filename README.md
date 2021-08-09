@@ -10,7 +10,7 @@ This program is a personal project made entirely by me when learning computer or
   * A coin is generated randomly at the start of every game or when the snake eats the previous coin.
   * A checking function is also created to make sure that the random coin doesnt generate on the coordinates of the snake. 
   * A new coin is regenerated if the current one is generated at an invalid coordinate.
-### Game Controls
+#### Game Controls
   * After the coin is generated, a loop will be initiated to detect for input and jump to specific functions according to the input.
   * If no key is entered, the program will keep looping and waiting for an input. 
   * If the snake is moving and a valid input is not entered, the function will continuously loop and snake will continuous to move at the current direction.
