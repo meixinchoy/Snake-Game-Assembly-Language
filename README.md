@@ -25,7 +25,7 @@ enter: pause game\
 
 ![](screenshots/snake%20moving.png)
 
-![](screenshots/youdied.png)
+![](screenshots/youdied.jpg)
 
 # Additional Notes
 Although the program code for the master branch and the develop branch slightly differs from each other, both codes are completed and able to output and run the full program. The master branch is more basic and easier to understand whereas the code in the develop branch has combined move up, down, left and right into one section and displays the high score as well(\*\*ScreenShot is not updated). Feel free to check out both versions of my program.
