@@ -63,7 +63,7 @@ Flowchart of this program can be downloaded here: [snake game flowchart.pdf](htt
 To start the game you will need to install the following items:
 1. visual studios   (can be installed [here](https://visualstudio.microsoft.com/downloads/)) 
 2. Irvine32 library (can be downloaded [here](https://github.com/meixinchoy/Irvine-library))
-3. create ASM file, paste code in and run program
+3. configure asm file, paste code in and run program
 
 ## Additional Notes
 Although the program code for the master branch and the adv branch slightly differs from each other, both codes are completed and able to output and run the full program. The master branch is more basic and easier to understand whereas the code in the develop branch more compact and the end screen displays the high score as well. Feel free to check out both versions of my program.
