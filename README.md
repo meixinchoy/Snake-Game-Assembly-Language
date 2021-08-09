@@ -57,7 +57,7 @@ Flowchart of this program can be downloaded here ->[snake game flowchart.pdf](ht
 
 ![](screenshots/ingame.jpg)
 
-![](screenshots/youdied.ppg)
+![](screenshots/youdied.png)
 
 ## Installation
 To start the game you will need to install the following items:
