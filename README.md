@@ -3,7 +3,7 @@
 This program is a personal project made entirely by me when learning computer organization and architecture during the second year of my degree in Management Mathematics and Computing. The idea behind of this program was the classic "Snake" game. This program was made using Microsoft Visual Studio 2017's 32bit MASM architecture in protected mode (no interrupts) and the Irvine32 library.
 
 ## Features and Functions
-### Game Speed Selection
+#### Game Speed Selection
   * User may choose from three speed levels, level 1 to level 3, level 3 being the slowest.
   * Each of the speed levels have a 40ms difference.
 ### Random Generation of coin
